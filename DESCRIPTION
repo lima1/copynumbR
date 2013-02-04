@@ -1,0 +1,9 @@
+Package: copynumbR
+Type: Package
+Title: Useful helper functions for working with copy number data
+Version: 0.1
+Date: 2012-03-02
+Author: Markus Riester
+Maintainer: Markus Riester <markus@jimmy.harvard.edu>
+Description: Copy number helper functions, mainly for visualizing and working with TCGA
+License: What license is it under?
