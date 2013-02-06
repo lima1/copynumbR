@@ -1,8 +1,8 @@
-\name{copynumbR.tcga.gisticinput}
-\alias{copynumbR.tcga.gisticinput}
-\title{copynumbR tcga gisticinput}
+\name{copynumbR.tcga.write.gisticinput}
+\alias{copynumbR.tcga.write.gisticinput}
+\title{copynumbR tcga write gisticinput}
 \description{Create a GISTIC input file from TCGA Level 3 data}
-\usage{copynumbR.tcga.gisticinput(path = ".", output.seg = "tcga.seg", 
+\usage{copynumbR.tcga.write.gisticinput(path = ".", output.seg = "tcga.seg", 
     output.alf = "tcga.alf", hg = "hg18", verbose = TRUE)}
 \arguments{
   \item{path}{The path containing the Level_3 folder}

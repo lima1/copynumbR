@@ -10,7 +10,7 @@ Title: \tab Useful helper functions for working with copy number data\cr
 Version: \tab 0.1\cr
 Date: \tab 2012-03-02\cr
 Author: \tab Markus Riester\cr
-Maintainer: \tab Markus Riester\cr
+Maintainer: \tab Markus Riester <markus@jimmy.harvard.edu>\cr
 License: \tab What license is it under?\cr}
 }
 \author{Markus Riester}

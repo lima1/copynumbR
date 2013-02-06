@@ -1,8 +1,9 @@
-\name{copynumbR.glad}
-\alias{copynumbR.glad}
-\title{copynumbR glad}
+\name{copynumbR.read.segmented}
+\alias{copynumbR.read.segmented}
+\title{copynumbR read segmented}
 \description{Read segmented data and turn it into an ExpressionSet}
-\usage{copynumbR.glad(filename, clinical, gene = FALSE, mad = 0.1, ...)}
+\usage{copynumbR.read.segmented(filename, clinical, gene = FALSE, mad = 0.1, 
+    ...)}
 \arguments{
   \item{filename}{The filename of segmented data}
   \item{clinical}{A data frame with clinical annotation for the phenoData slot of the output

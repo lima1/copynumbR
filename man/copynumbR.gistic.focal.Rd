@@ -6,7 +6,7 @@
     gistic.lesions.file.del = "del_genes.conf_95.txt", gain = 0.1, 
     loss = -0.1)}
 \arguments{
-  \item{eset}{The GISTIC lesions file read with copynumbR.gistic.lesions}
+  \item{eset}{The GISTIC lesions file read with copynumbR.gistic.read.lesions}
   \item{gistic.lesions.file.amp}{The GISTIC output file amp_genes.conf_95.txt}
   \item{gistic.lesions.file.del}{The GISTIC output file del_genes.conf_95.txt}
   \item{gain}{Minimum log2 ratio for a copy number gain}

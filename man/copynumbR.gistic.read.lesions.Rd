@@ -1,8 +1,9 @@
-\name{copynumbR.gistic.lesions}
-\alias{copynumbR.gistic.lesions}
-\title{copynumbR gistic lesions}
+\name{copynumbR.gistic.read.lesions}
+\alias{copynumbR.gistic.read.lesions}
+\title{copynumbR gistic read lesions}
 \description{Read GISTIC all_lesions file}
-\usage{copynumbR.gistic.lesions(filename, clinical, data.col = 10, ...)}
+\usage{copynumbR.gistic.read.lesions(filename, clinical, data.col = 10, 
+    ...)}
 \arguments{
   \item{filename}{The filename of the GISTIC output file}
   \item{clinical}{A data frame with clinical annotation for the phenoData slot of the output
