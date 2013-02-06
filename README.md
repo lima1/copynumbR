@@ -1,4 +1,4 @@
 # Install
 
-library(devtools)
-install_github("copynumbR", user="lima1")
+    library(devtools)
+    install_github("copynumbR", user="lima1")

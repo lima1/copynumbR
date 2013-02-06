@@ -2,7 +2,7 @@
 \alias{copynumbR.read.segmented}
 \title{copynumbR read segmented}
 \description{Read segmented data and turn it into an ExpressionSet}
-\usage{copynumbR.read.segmented(filename, clinical, gene = FALSE, mad = 0.1, 
+\usage{copynumbR.read.segmented(filename, clinical, gene = FALSE, mad = 0, 
     ...)}
 \arguments{
   \item{filename}{The filename of segmented data}
