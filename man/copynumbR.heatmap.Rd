@@ -32,7 +32,7 @@ list of ggplot2 objects}
 }
 }
 
-
+\value{List of two ggplot2 objects (dendrogram and heatmap)    }
 
 \author{Markus Riester}
 

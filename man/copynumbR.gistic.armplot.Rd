@@ -20,4 +20,14 @@
 
 
 
+\examples{
+library(copynumbR)
 
+res <-
+    copynumbR.gistic.armplot(file=
+        system.file("extdata/gistic_stransky_bladder", 
+            "broad_values_by_arm.txt", package="copynumbR")
+    )
+
+plot(res[[1]])
+}

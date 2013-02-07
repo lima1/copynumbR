@@ -20,4 +20,13 @@ changes }
 
 
 
+\examples{
+library(copynumbR)
+clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+eset <-
+copynumbR.gistic.read.broad(system.file("extdata/gistic_stransky_bladder",
+    "broad_values_by_arm.txt", package="copynumbR"), clinical)
 
+# display the distributions of copy numbers of all chromosome arms
+boxplot(t(exprs(eset)))
+}

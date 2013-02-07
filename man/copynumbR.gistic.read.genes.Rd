@@ -21,4 +21,13 @@ GISTIC}
 
 
 
+\examples{
+library(copynumbR)
+clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+eset <-
+copynumbR.gistic.read.genes(system.file("extdata/gistic_stransky_bladder",
+    "all_data_by_genes.txt", package="copynumbR"), clinical)
 
+# show the copy number distribution of MYC copy numbers
+boxplot(exprs(eset)["MYC",])
+}

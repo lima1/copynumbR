@@ -1,6 +1,3 @@
-library(bioDist)
-library(Ringo)
-
 copynumbR.gistic.read.lesions <- function
 ### Read GISTIC all_lesions file
 (filename, 
@@ -14,10 +11,24 @@ data.col=10,
 ...
 ### Additional arguments passed to copynumbR.eset()
 ) {
-    data = read.delim(filename, stringsAsFactors=FALSE)
-    data = data[grep("^Actual Copy", data[,9]),]
+    data <- read.delim(filename, stringsAsFactors=FALSE)
+    data <- data[grep("^Actual Copy", data[,9]),]
     copynumbR.eset(data, clinical,data.col,...)
 ### ExpressionSet containing the significant GISTIC output    
+}
+
+attr(copynumbR.gistic.read.lesions,"ex") <- function(){
+    library(copynumbR)
+    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+    eset <-
+    copynumbR.gistic.read.lesions(system.file("extdata/gistic_stransky_bladder",
+        "all_lesions.conf_95.txt", package="copynumbR"), clinical)
+
+    # list all recurrent gains and losses
+    featureData(eset)$Descriptor
+    
+    # show the copy number distributions of all recurrent alterations
+    boxplot(t(exprs(eset)))
 }
 
 copynumbR.gistic.read.genes <- function
@@ -39,6 +50,17 @@ data.col=4,
     eset
 ### ExpressionSet containing the copy numbers for all genes as estimated by
 ### GISTIC
+}
+
+attr(copynumbR.gistic.read.genes,"ex") <- function(){
+    library(copynumbR)
+    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+    eset <-
+    copynumbR.gistic.read.genes(system.file("extdata/gistic_stransky_bladder",
+        "all_data_by_genes.txt", package="copynumbR"), clinical)
+
+    # show the copy number distribution of MYC copy numbers
+    boxplot(exprs(eset)["MYC",])
 }
 
 copynumbR.gistic.write.arrayfile <- function
@@ -69,6 +91,17 @@ data.col=2,
     copynumbR.eset(data, clinical,data.col,...)
 }
 
+attr(copynumbR.gistic.read.broad,"ex") <- function(){
+    library(copynumbR)
+    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+    eset <-
+    copynumbR.gistic.read.broad(system.file("extdata/gistic_stransky_bladder",
+        "broad_values_by_arm.txt", package="copynumbR"), clinical)
+    
+    # display the distributions of copy numbers of all chromosome arms
+    boxplot(t(exprs(eset)))
+}
+
 copynumbR.gistic.genes.region <- function
 ### Extract GISTIC genes in a specified region
 (filename, 
@@ -76,11 +109,11 @@ copynumbR.gistic.genes.region <- function
 region
 ### The region to extract. 
 ) {
-    region = gsub("\\(probes.*$","", region)
-    data = read.delim(filename, stringsAsFactors=FALSE)
-    idx = match(region, data[3,])
-    genes = data[4:nrow(data),idx]
-    genes = genes[genes!=""]
+    region <- gsub("\\(probes.*$","", region)
+    data <- read.delim(filename, stringsAsFactors=FALSE)
+    idx <- match(region, data[3,])
+    genes <- data[4:nrow(data),idx]
+    genes <- genes[genes!=""]
     genes
 ### Genes in the specified region    
 }
@@ -92,15 +125,24 @@ copynumbR.gistic.genes.band <- function
 band
 ### The chromosome band
 ) {
-    band = make.names(band)
-    data = read.delim(filename, stringsAsFactors=FALSE)
+    band <- make.names(band)
+    data <- read.delim(filename, stringsAsFactors=FALSE)
     lapply(data[3, grepl(band,colnames(data),fixed=TRUE)], function(region)
     copynumbR.gistic.genes.region(filename,region))
 ### Genes in the specified chromosome band    
 }
 
+attr(copynumbR.gistic.genes.band,"ex") <- function(){
+    library(copynumbR)
+    # extract the gene symbols in the GISTIC peak 8q24.21
+    band <-
+    copynumbR.gistic.genes.band(system.file("extdata/gistic_stransky_bladder",
+        "amp_genes.conf_95.txt", package="copynumbR"), "8q24.21")
+}
+
 copynumbR.gistic.focal <- function
-### The GISTIC output file
+### Create a data.frame with all GISTIC focal alterations. Useful for
+### presentation in knitR/Sweave.
 (eset, 
 ### The GISTIC lesions file read with copynumbR.gistic.read.lesions
 gistic.lesions.file.amp="amp_genes.conf_95.txt",
@@ -112,8 +154,8 @@ gain=0.1,
 loss=-0.1
 ### Maximum log2 ratio for a copy number loss
 ) {
-        eset = .addGISTICregion(eset)
-        df = data.frame(Chr = featureData(eset)[[2]], Start =
+        eset <- .addGISTICregion(eset)
+        df <- data.frame(Chr = featureData(eset)[[2]], Start =
         featureData(eset)$start, End = featureData(eset)$end,
         Type= sapply(featureData(eset)[[1]], function(x) strsplit(x, 
         " ")[[1]][1]), "q-value"=featureData(eset)[[6]], 
@@ -124,6 +166,23 @@ loss=-0.1
         .addGenes(eset, df, gistic.lesions.file.amp, gistic.lesions.file.del)
 
 }
+
+attr(copynumbR.gistic.focal,"ex") <- function(){
+    library(copynumbR)
+    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+    eset <-
+    copynumbR.gistic.read.lesions(system.file("extdata/gistic_stransky_bladder",
+        "all_lesions.conf_95.txt", package="copynumbR"), clinical)
+
+    focal <-
+        copynumbR.gistic.focal(eset, 
+            system.file("extdata/gistic_stransky_bladder", 
+                "amp_genes.conf_95.txt", package="copynumbR"),
+            system.file("extdata/gistic_stransky_bladder",
+                "del_genes.conf_95.txt", package="copynumbR")
+        )
+}
+
 
 copynumbR.gistic.armplot <- function
 ### Plot chromosome numbers as estimated by GISTIC
@@ -136,23 +195,24 @@ chromosomes=c(1:12,16:20),
 ncol=NULL, 
 ### Number of columns in the plot
 ... ){
-    data = read.delim(file,stringsAsFactors=FALSE)
-    cols = match(paste(rep(chromosomes,2), c(rep("p",length(chromosomes)),
+    require(ggplot2)
+    data <- read.delim(file,stringsAsFactors=FALSE)
+    cols <- match(paste(rep(chromosomes,2), c(rep("p",length(chromosomes)),
     rep("q", length(chromosomes))), sep=""),data[,1])
-    data = data[cols,]
-    data.stack = stack(data,select=-Chromosome.Arm)
-    data$Chromosome = gsub("p|q","", data[,1])
-    data$Arm        = gsub("^\\d+","",data[,1])
+    data <- data[cols,]
+    data.stack <- stack(data,select=-Chromosome.Arm)
+    data$Chromosome <- gsub("p|q","", data[,1])
+    data$Arm        <- gsub("^\\d+","",data[,1])
 
-    data.stack = cbind(
+    data.stack <- cbind(
         Chromosome = rep(paste("Chr",data$Chromosome),nrow(data.stack)/nrow(data)),
         Arm        = rep(data$Arm,nrow(data.stack)/nrow(data)),
         data.stack)
-    data.stack$Chromosome = factor( data.stack$Chromosome,
-    levels=paste("Chr",data$Chromosome) )
-    data.stack = cbind(data.stack[data.stack$Arm=="p",-(2:3)],
-    p=data.stack[data.stack$Arm=="p",3],
-    q=data.stack[data.stack$Arm=="q",3])
+    data.stack$Chromosome <- factor( data.stack$Chromosome,
+    levels=unique(paste("Chr",data$Chromosome)) )
+    data.stack <- cbind(data.stack[data.stack$Arm=="p",-(2:3)],
+        p=data.stack[data.stack$Arm=="p",3],
+        q=data.stack[data.stack$Arm=="q",3])
     if (!is.null(subtypes)) {
         data.stack$subtype = subtypes
         data.stack = data.stack[complete.cases(data.stack),]
@@ -173,6 +233,19 @@ ncol=NULL,
     list(plot=gp, data=data.stack)
     ### A list containing the ggplot2 and the data as used in ggplot2
 }
+
+attr(copynumbR.gistic.armplot,"ex") <- function(){
+    library(copynumbR)
+
+    res <-
+        copynumbR.gistic.armplot(file=
+            system.file("extdata/gistic_stransky_bladder", 
+                "broad_values_by_arm.txt", package="copynumbR")
+        )
+
+    plot(res[[1]])
+}
+
 
 copynumbR.tcga.input <- function(path=".", output="tcga.txt", verbose=TRUE,
 grepregex="\\.data.txt", row.names=1, var.column=1) {
@@ -223,21 +296,30 @@ clinical,
 ### A data frame with clinical annotation for the phenoData slot of the output
 ### ExpressionSet
 gene=FALSE,
-### Either segments or genes as features. The latter currently only support
-### hg18
+### Either segments or genes as features. 
 mad=0.0,
 ### filter low-variance segments, typically useful for clustering
-...) {
+geneMap=NULL,
+### The gene mapping if gene==TRUE. See ?getRS.
+...
+### Additional arguments passed to the copynumbR.eset function
+) {
     require(CNTools)
     data.col <- ifelse(gene,6,4)
     cn = read.delim(filename,as.is=TRUE)
     colnames(cn) = c("ID","chrom","loc.start","loc.end","num.mark","seg.mean") 
     seg = CNSeg(cn)
-    if (gene)  {
+    if (gene && is.null(geneMap)) {
         data(geneInfo)
-        rsseg <- getRS(seg, by = "gene", imput = FALSE, XY = FALSE, what="mean",geneMap=geneInfo)
+        warning("geneMap not defined. Using hg18 default provided by the CNTools package")
+        geneMap <- geneInfo
+    }
+    if (gene)  {
+        rsseg <- getRS(seg, by = "gene", imput = FALSE, XY = FALSE,
+            what="mean",geneMap=geneMap)
     } else {
-        rsseg <- getRS(seg, by = "region", imput = FALSE, XY = FALSE, what="mean",geneMap=geneInfo)
+        rsseg <- getRS(seg, by = "region", imput = FALSE, XY = FALSE,
+            what="mean",geneMap=geneMap)
     }
     if (mad > 0) {
     f1 = function(x) { sum(x == 0) == 0 }
@@ -258,6 +340,18 @@ mad=0.0,
     eset
 }
 
+attr(copynumbR.read.segmented,"ex") <- function(){
+    library(copynumbR)
+    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+    eset <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
+    # Plot the distribution of copy numbers of segments in all samples
+    plot(exprs(eset))
+
+    eset.genes <- copynumbR.read.segmented(system.file("extdata",
+     "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE)
+
+    boxplot(exprs(eset.genes)["MYC",])
+}
 
 .addGISTICregion <- function(eset) {
     featureData(eset)$chr = gsub(":.*$","",featureData(eset)[[3]])
@@ -394,7 +488,7 @@ copynumbR.boxplot <- function
 ### ExpressionSet with copy number data
 eset.expr,
 ### ExpressionSet with expression data
-cutoffs=c(-Inf,-1.3,-0.2,0.2,0.9,Inf),
+cutoffs=c(-Inf,-1.3,-0.1,0.1,0.9,Inf),
 ### Copy number cutoffs 
 cutoff.labels=c("High Loss","Loss","Normal","Gain","Amplification"),
 ### The labels of these cutoffs
@@ -757,6 +851,7 @@ package="copynumbR")
         print(p1+xtmp, vp=viewport(0.8, 0.84, x=0.4, y=0.47))
     }
     list(p1,p2)
+### List of two ggplot2 objects (dendrogram and heatmap)    
 }
 
 attr(copynumbR.heatmap,"ex") <- function(){

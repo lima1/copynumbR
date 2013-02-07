@@ -4,7 +4,7 @@
 \description{A boxplot showing correlation of copy number and Expression for matched
 data}
 \usage{copynumbR.boxplot(eset.cn, eset.expr, cutoffs = c(-Inf, -1.3, 
-    -0.2, 0.2, 0.9, Inf), cutoff.labels = c("High Loss", "Loss", 
+    -0.1, 0.1, 0.9, Inf), cutoff.labels = c("High Loss", "Loss", 
     "Normal", "Gain", "Amplification"), probesets = NULL, min.samples = 3, 
     sqrt = FALSE, highlight = NULL, highlight.labels = NULL, 
     xlab = "Copy Number", ylab = "Expression")}

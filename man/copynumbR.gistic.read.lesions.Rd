@@ -20,4 +20,16 @@ changes }
 
 
 
+\examples{
+library(copynumbR)
+clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+eset <-
+copynumbR.gistic.read.lesions(system.file("extdata/gistic_stransky_bladder",
+    "all_lesions.conf_95.txt", package="copynumbR"), clinical)
 
+# list all recurrent gains and losses
+featureData(eset)$Descriptor
+
+# show the copy number distributions of all recurrent alterations
+boxplot(t(exprs(eset)))
+}
