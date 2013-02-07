@@ -514,6 +514,8 @@ xlab="Copy Number",
 ylab="Expression"
 ### The label of the y-axis
 ) {
+    
+    require(ggplot2)
 
     # if user utilized our copynumbR, symbols might be in the first
     # featureData slot
@@ -559,6 +561,18 @@ ylab="Expression"
     }
     p
 ### A ggplot2 object.    
+}
+
+attr(copynumbR.boxplot,"ex") <- function(){
+    library(copynumbR)
+    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+
+    eset.genes <- copynumbR.read.segmented(system.file("extdata",
+     "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE)
+
+    # We don't have matched expression data, so we use the copy number instead
+    # for this example
+    copynumbR.boxplot(eset.genes, eset.genes, probeset="MYC")
 }
 
 
