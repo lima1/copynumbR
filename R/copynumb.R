@@ -369,14 +369,14 @@ attr(copynumbR.read.segmented,"ex") <- function(){
     ifelse(max(x)==max(abs(x)),max(x), min(x)) )
 }
 
-copynumbR.clone.gistic.eset <- function
-### Extract matching copy numbers 
+copynumbR.gistic.clone.eset <- function
+### Extract GISTIC peak copy numbers from segmented data 
 (eset.gistic,
 ### An ExpressionSet with GISTIC peaks read with copynumbR.gistic.read.lesions
 eset.segmented)
 ### An ExpressionSet with segmented data, typically from another cohort,
-### read with copynumbR.segmented. So this is useful to compare copy numbers at
-### GISTIC peaks across cohorts
+### read with copynumbR.read.segmented. This is useful to compare copy numbers at
+### GISTIC peaks across cohorts.
 {
     eset.gistic = .addGISTICregion(eset.gistic)
     M = t(mapply(rbind, lapply(1:nrow(eset.gistic), .fetchGISTICcopynumber,
@@ -388,6 +388,30 @@ eset.segmented)
 ### An ExpressionSet containing copy numbers from eset.segmented of the GISTIC peaks    
 ### in eset.gistic
 }
+
+attr(copynumbR.gistic.clone.eset,"ex") <- function(){
+    library(copynumbR)
+
+    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+
+    # Read GISTIC peaks
+    eset.gistic <-
+    copynumbR.gistic.read.lesions(system.file("extdata/gistic_stransky_bladder",
+        "all_lesions.conf_95.txt", package="copynumbR"), clinical)
+    
+    # Read segmented data, typically from another cohort
+    eset.segmented <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
+    
+    # We do not have example data of a second cohort, so we just extract the
+    # GISTIC peaks from the segmented data
+    eset.cloned <- copynumbR.gistic.clone.eset(eset.gistic, eset.segmented)
+
+    plot(exprs(eset.gistic)[2,],
+         exprs(eset.cloned)[2,], xlab="GISTIC", ylab="Segmented",
+         main="MYC Locus")
+
+}
+
 
 .addGenes <- function(eset, df, gistic.lesions.file.amp, gistic.lesions.file.del) {
     if (!is.null(gistic.lesions.file.del)) {
@@ -487,18 +511,24 @@ attr(copynumbR.eset,"ex") <- function(){
 
 
 copynumbR.boxplot <- function
-### A boxplot showing correlation of copy number and Expression for matched
+### A boxplot showing correlation of copy number and expression for matched
 ### data
 (eset.cn, 
-### ExpressionSet with copy number data
+### ExpressionSet with copy number data. The featureNames must correspond to
+### the eset.expr provided next. Typically created with
+### copynumbR.read.segmented(...,gene=TRUE) or
+### copynumbR.gistic.read.genes(...) 
 eset.expr,
-### ExpressionSet with expression data
+### ExpressionSet with expression data. See above, the featureNames must
+### correspond to the ones of eset.cn. So for Affymetrix data for example,
+#### probe sets need to be collapsed (for example with the WGCNA package). 
 cutoffs=c(-Inf,-1.3,-0.1,0.1,0.9,Inf),
 ### Copy number cutoffs 
 cutoff.labels=c("High Loss","Loss","Normal","Gain","Amplification"),
 ### The labels of these cutoffs
 probesets=NULL, 
-### Display only these genes. If null, show all genes.
+### Display only these genes. If null, show all genes. That default is 
+### obviously only useful for already filtered ExpressionSets.
 min.samples=3, 
 ### Minimum number of samples in each cutoff category
 sqrt=FALSE,
@@ -512,14 +542,6 @@ xlab="Copy Number",
 ylab="Expression"
 ### The label of the y-axis
 ) {
-    # if user utilized our copynumbR, symbols might be in the first
-    # featureData slot
-    if (length( intersect(featureData(eset.cn)[[1]], featureNames(eset.expr)))  > 
-        length( intersect(featureNames(eset.cn), featureNames(eset.expr)) )) {
-            eset.cn <- eset.cn[match(featureNames(eset.expr),
-            featureData(eset.cn)[[1]]),]
-            featureNames(eset.cn) <- featureNames(eset.expr)
-    }    
 
     if (!is.null(probesets)) {
         eset.cn <- eset.cn[probesets,]

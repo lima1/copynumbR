@@ -11,9 +11,27 @@ Version: \tab 0.1\cr
 Date: \tab 2012-03-02\cr
 Author: \tab Markus Riester\cr
 Maintainer: \tab Markus Riester <markus@jimmy.harvard.edu>\cr
-Imports: \tab CNTools, Biobase, ggplot2, TTR, bioDist, plyr, RColorBrewer, scales, grid, xts\cr
-Depends: \tab R (>= 2.10.0)\cr
-License: \tab Artistic-2.0\cr}
+LazyData: \tab true\cr
+LazyLoad: \tab true\cr
+Imports: \tab 
+CNTools,
+Biobase,
+ggplot2(>= 0.9.2),
+TTR,
+bioDist,
+plyr,
+RColorBrewer,
+scales,
+grid,
+xts,
+ggdendro,
+Ringo\cr
+Depends: \tab 
+R (>= 2.10.0),
+Biobase,
+CNTools\cr
+License: \tab GPL-3\cr
+URL: \tab https://github.com/lima1/copynumbR\cr}
 }
 \author{Markus Riester}
 
