@@ -195,7 +195,6 @@ chromosomes=c(1:12,16:20),
 ncol=NULL, 
 ### Number of columns in the plot
 ... ){
-    require(ggplot2)
     data <- read.delim(file,stringsAsFactors=FALSE)
     cols <- match(paste(rep(chromosomes,2), c(rep("p",length(chromosomes)),
     rep("q", length(chromosomes))), sep=""),data[,1])
@@ -304,7 +303,6 @@ geneMap=NULL,
 ...
 ### Additional arguments passed to the copynumbR.eset function
 ) {
-    require(CNTools)
     data.col <- ifelse(gene,6,4)
     cn = read.delim(filename,as.is=TRUE)
     colnames(cn) = c("ID","chrom","loc.start","loc.end","num.mark","seg.mean") 
@@ -514,9 +512,6 @@ xlab="Copy Number",
 ylab="Expression"
 ### The label of the y-axis
 ) {
-    
-    require(ggplot2)
-
     # if user utilized our copynumbR, symbols might be in the first
     # featureData slot
     if (length( intersect(featureData(eset.cn)[[1]], featureNames(eset.expr)))  > 
@@ -630,8 +625,6 @@ res <- res[lapply(res, function(x) sum(as.vector(x))) > min.samples]
 
 .getSmoothedData <- function(esets, window, labels, gain, loss, sma,
     centromer.file) {
-    require(TTR)
-    require(plyr)
     hg18 <- .getCentromer(esets[[1]], centromer.file)
 
      .coords <- function(eset,label,gain,loss) {   
@@ -686,12 +679,14 @@ from.chr=1,
 ### Start plotting at this chromosome
 to.chr=22,
 ### End plotting at this chromosome
+ylab="Loss (%) / Gain (%)",
+### The y-axis label
+xlab="Chromosome",
+### The x-axis label
 centromer.file=system.file("extdata", "hg18centromer.txt",
 package="copynumbR")
 ### File containing the centromer locations for each chromosome
 ) {
-    require(ggplot2)
-    
     res <- .getSmoothedData(esets,window,labels,gain,loss,sma,centromer.file)
     
     df <- res$df
@@ -701,10 +696,10 @@ package="copynumbR")
     q <- q+ scale_fill_brewer("",palette="Set1")+labs(fill="") +
         scale_x_continuous(minor_breaks=cumsum(res$hg$chrl)/window,
         breaks=round(res$hg$centromer[,1]/window)
-        ,labels=res$hg$chrs[1:22],limits=c(from.chr-1,cumsum(res$hg$chrl)[to.chr+1]/window))+
-        ylab("Loss (%) / Gain (%)")+xlab("Chromosome")+facet_grid(label ~ .)
+        ,labels=res$hg$chrs[from.chr:to.chr],limits=c(from.chr-1,cumsum(res$hg$chrl)[to.chr+1]/window))+
+        ylab(ylab)+xlab(xlab)+facet_grid(label ~ .)
     q <- q +  scale_y_continuous(minor_breaks = NULL,
-        breaks=c(-1,-0.5,0,0.5,1),labels=c(100,50,0,50,100))+
+        labels = percent_format())+
         theme(panel.grid.minor =
         element_line(size = 0.4, colour =
             'white'),panel.grid.major=element_line(linetype="blank"))
@@ -762,14 +757,6 @@ centromer.file=system.file("extdata", "hg18centromer.txt",
 package="copynumbR")
 ### File containing the centromer locations for each chromosome
 ) {
-    require(TTR)
-    require(RColorBrewer)
-    require(ggdendro)
-    require(scales)
-    require(bioDist)
-    require(ggplot2)
-    require(plyr)
-    require(grid)
     sampleNames(eset) <- make.names(sampleNames(eset))
     eset <- eset[featureData(eset)[[1]]>= from.chr & featureData(eset)[[1]] <=
         to.chr] 
@@ -777,8 +764,8 @@ package="copynumbR")
     if (is.null(Colv)) {
         Colv <- hclustfun(distfun(eset))
     }
-
-    eset <- eset[,Colv$order]
+    
+    if (!is.na(Colv)) eset <- eset[,Colv$order]
 
     if (!is.null(start)) {
         idx <- (featureData(eset)[[1]]== from.chr &
@@ -859,18 +846,23 @@ package="copynumbR")
     ylab(ylab)+ scale_fill_identity(labels=1:3,
     breaks=colx)+theme_classic2()+theme(axis.text.x = element_text(angle = 90,
     hjust = 1),legend.position="none")
-    Colv$labels <- ""
-    p2 <- ggdendrogram(dendro_data(Colv))
-    if (plot) {
-        tmp <- theme(plot.margin = unit(rep(0.1,4), "lines"))
-        xtmp <- tmp
-        if (hide.labels) xtmp <- tmp +
-            theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())
+    if (is.na(Colv)) {
+        if (plot) print(p1)
+        return(list(p1))
+    } else {
+        Colv$labels <- ""
+        if (plot) {
+            tmp <- theme(plot.margin = unit(rep(0.1,4), "lines"))
+            xtmp <- tmp
+            if (hide.labels) xtmp <- tmp +
+                theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())
 
-        grid.newpage()
-        print(p2+tmp, vp=viewport(0.8, 0.2, x=0.42, y=0.92))
-        print(p1+xtmp, vp=viewport(0.8, 0.84, x=0.4, y=0.47))
-    }
+            grid.newpage()
+            print(p2+tmp, vp=viewport(0.8, 0.2, x=0.42, y=0.92))
+            print(p1+xtmp, vp=viewport(0.8, 0.84, x=0.4, y=0.47))
+        }
+        p2 <- ggdendrogram(dendro_data(Colv))
+    }     
     list(p1,p2)
 ### List of two ggplot2 objects (dendrogram and heatmap)    
 }

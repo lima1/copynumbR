@@ -4,7 +4,8 @@
 \description{Chromosome frequency plot}
 \usage{copynumbR.plot(esets, window = 5e+05, labels = paste(names(esets), 
     " (n = ", sapply(esets, ncol), ")", sep = ""), gain = 0.1, 
-    loss = -0.1, sma = 10, from.chr = 1, to.chr = 22, centromer.file = system.file("extdata", 
+    loss = -0.1, sma = 10, from.chr = 1, to.chr = 22, ylab = "Loss (\%) / Gain (\%)", 
+    xlab = "Chromosome", centromer.file = system.file("extdata", 
         "hg18centromer.txt", package = "copynumbR"))}
 \arguments{
   \item{esets}{List of ExpressionSets}
@@ -15,6 +16,8 @@
   \item{sma}{Smooth copy numbers with a simple moving average}
   \item{from.chr}{Start plotting at this chromosome}
   \item{to.chr}{End plotting at this chromosome}
+  \item{ylab}{The y-axis label}
+  \item{xlab}{The x-axis label}
   \item{centromer.file}{
 }
 }

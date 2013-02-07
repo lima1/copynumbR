@@ -6,6 +6,6 @@ Date: 2012-03-02
 Author: Markus Riester
 Maintainer: Markus Riester <markus@jimmy.harvard.edu>
 Description: Copy number helper functions, mainly for visualizing and working with TCGA
-Depends: R (>= 2.10.0), CNTools, Biobase
-Suggests: ggplot2, TTR, bioDist, plyr, RColorBrewer, scales, grid
+Imports: CNTools, Biobase, ggplot2, TTR, bioDist, plyr, RColorBrewer, scales, grid, xts
+Depends: R (>= 2.10.0)
 License: Artistic-2.0
