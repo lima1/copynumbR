@@ -6,11 +6,10 @@
     Colv = NULL, distfun = spearman.dist, hclustfun = hclust, 
     from.chr = 1, to.chr = 22, start = NULL, end = NULL, ensembl = NULL, 
     plot = TRUE, hide.labels = FALSE, ylab = ("Chromosome"), 
-    centromer.file = system.file("extdata", "hg18centromer.txt", 
-        package = "copynumbR"))}
+    centromere.file = "hg18")}
 \arguments{
   \item{eset}{ExpressionSet, typically created with copynumbR.read.segmented}
-  \item{window}{Window size in base pairs. Copy numbers will be averaged in each window}
+  \item{window}{Window size in base pairs. Copy numbers will the median in each window}
   \item{gain}{Minimum log2 ratio for a copy number gain}
   \item{loss}{Maximum log2 ratio for a copy number loss}
   \item{Colv}{Cluster columns.}
@@ -28,8 +27,11 @@
 list of ggplot2 objects}
   \item{hide.labels}{Hide the sample labels on the bottom}
   \item{ylab}{The y-axis label}
-  \item{centromer.file}{
-}
+  \item{centromere.file}{File containing the centromere locations for each chromosome
+These files are already provided for hg17-hg19
+curl -s
+"http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
+gunzip -c | grep acen}
 }
 
 \value{List of two ggplot2 objects (dendrogram and heatmap)    }
@@ -43,5 +45,5 @@ list of ggplot2 objects}
 library(copynumbR)
 clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
 eset <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
-p <- copynumbR.heatmap(eset)
+p <- copynumbR.heatmap(eset, centromere.file="hg17")
 }

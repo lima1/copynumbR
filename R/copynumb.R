@@ -597,35 +597,47 @@ res <- res[lapply(res, function(x) sum(as.vector(x))) > min.samples]
 }
 
 
-.getCentromer <- function(eset, centromer.file) {
-    centromer <- read.delim(centromer.file, as.is=TRUE, header=FALSE)
-    centromer[,1] <- gsub("chr","",centromer[,1])
-    centromer <- centromer[!duplicated(centromer[,3]),]
-    centromer[,1] <- gsub("X","23",centromer[,1])
-    centromer[,1] <- gsub("Y","24",centromer[,1])
-    centromer[,1] <- as.numeric(centromer[,1])
-    centromer <- centromer[order(centromer[,1]),]
-        idx.min <- sapply(1:22,function(i) min(which(centromer[,1]==i)))
-        idx.max <- sapply(1:22,function(i) max(which(centromer[,1]==i)))
+.getCentromere <- function(eset, centromere.file) {
 
-    centromer <- cbind(centromer[idx.min,2], centromer[idx.max,3],0)
-    centromer[13:15,1:2] <- 0
+    if (!file.exists(centromere.file)) {
+        centromere.file <- switch(centromere.file,
+            "hg17" = system.file("extdata", "centromere_hg17.txt",
+                package="copynumbR"),
+            "hg18" = system.file("extdata", "centromere_hg18.txt",
+                package="copynumbR"),
+            "hg19" = system.file("extdata", "centromere_hg19.txt",
+                package="copynumbR"),
+            stop("Centromere file not found."))
+    }
+
+    centromere <- read.delim(centromere.file, as.is=TRUE, header=FALSE)
+    centromere[,1] <- gsub("chr","",centromere[,1])
+    centromere <- centromere[!duplicated(centromere[,3]),]
+    centromere[,1] <- gsub("X","23",centromere[,1])
+    centromere[,1] <- gsub("Y","24",centromere[,1])
+    centromere[,1] <- as.numeric(centromere[,1])
+    centromere <- centromere[order(centromere[,1]),]
+    idx.min <- sapply(1:24,function(i) min(which(centromere[,1]==i)))
+    idx.max <- sapply(1:24,function(i) max(which(centromere[,1]==i)))
+
+    centromere <- cbind(centromere[idx.min,2], centromere[idx.max,3],0)
+    centromere[13:15,1:2] <- 0
 
     chrs <- unique(featureData(eset)[[1]])
     chrl <- sapply(chrs, function(x)
     max(featureData(eset[featureData(eset)[[1]]==x,])[[3]]))
-    chrstart <- sapply(1:22, function(i) min(featureData(eset[featureData(eset)[[1]] == i,])[[2]]))
+    chrstart <- sapply(chrs, function(i) min(featureData(eset[featureData(eset)[[1]] == i,])[[2]]))
     chrl <- c(0,chrl - chrstart)
 
 
-    centromer <- cbind(cumsum(chrl)[1:22]+centromer[,1],
-                    cumsum(chrl)[1:22]+centromer[,2], 0)
-    list(centromer=centromer, chrstart=chrstart, chrs=chrs, chrl=chrl)                
+    centromere <- cbind(cumsum(chrl)[1:24]+centromere[,1],
+                    cumsum(chrl)[1:24]+centromere[,2], 0)
+    list(centromere=centromere, chrstart=chrstart, chrs=chrs, chrl=chrl)                
 }
 
 .getSmoothedData <- function(esets, window, labels, gain, loss, sma,
-    centromer.file) {
-    hg18 <- .getCentromer(esets[[1]], centromer.file)
+    centromere.file) {
+    hg18 <- .getCentromere(esets[[1]], centromere.file)
 
      .coords <- function(eset,label,gain,loss) {   
         dels <- apply(exprs(eset),1,function(x) sum(x< loss))
@@ -666,7 +678,7 @@ copynumbR.plot <- function
 (esets,
 ### List of ExpressionSets
 window=500000,
-### Window size in base pairs. Copy numbers will be averaged in each window
+### Window size in base pairs. Copy numbers will be the median in each window
 labels=paste(names(esets), " (n = ", sapply(esets, ncol),")", sep=""),
 ### The labels of the ExpressionSets.
 gain=0.1,
@@ -679,15 +691,25 @@ from.chr=1,
 ### Start plotting at this chromosome
 to.chr=22,
 ### End plotting at this chromosome
-ylab="Loss (%) / Gain (%)",
+ylab="Loss / Gain",
 ### The y-axis label
 xlab="Chromosome",
 ### The x-axis label
-centromer.file=system.file("extdata", "hg18centromer.txt",
-package="copynumbR")
-### File containing the centromer locations for each chromosome
+centromere.file="hg18"
+### File containing the centromere locations for each chromosome
+### These files are already provided for hg17-hg19
+###  curl -s
+### "http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
+### gunzip -c | grep acen
 ) {
-    res <- .getSmoothedData(esets,window,labels,gain,loss,sma,centromer.file)
+    require(xts)
+
+    max.chr <- max(sapply(esets, function(X) max(featureData(X)$chrom))) 
+    min.chr <- min(sapply(esets, function(X) min(featureData(X)$chrom))) 
+    if (max.chr < to.chr) to.chr <- max.chr
+    if (min.chr > from.chr) from.chr <- min.chr
+
+    res <- .getSmoothedData(esets,window,labels,gain,loss,sma,centromere.file)
     
     df <- res$df
 
@@ -695,7 +717,7 @@ package="copynumbR")
         ymax=field,fill=type))+geom_ribbon()
     q <- q+ scale_fill_brewer("",palette="Set1")+labs(fill="") +
         scale_x_continuous(minor_breaks=cumsum(res$hg$chrl)/window,
-        breaks=round(res$hg$centromer[,1]/window)
+        breaks=round(res$hg$centromere[from.chr:to.chr,1]/window)
         ,labels=res$hg$chrs[from.chr:to.chr],limits=c(from.chr-1,cumsum(res$hg$chrl)[to.chr+1]/window))+
         ylab(ylab)+xlab(xlab)+facet_grid(label ~ .)
     q <- q +  scale_y_continuous(minor_breaks = NULL,
@@ -710,7 +732,17 @@ attr(copynumbR.plot,"ex") <- function(){
     library(copynumbR)
     clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
     eset <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
-    p <- copynumbR.plot(list(eset), labels="Stransky")
+
+    # find the non-muscle-invasive samples
+    idx.noninvasive <- grepl("Ta|T1", eset$T)
+    
+    # create a list of ExpressionSets with the low- and high stage samples
+    eset.stage <- list("Non-Muscle-Invasive"=eset[,idx.noninvasive],
+        "Invasive"=eset[,!idx.noninvasive])
+    
+    # now compare the copy numbers of these two groups
+    p <- copynumbR.plot(eset.stage, centromere.file="hg17")
+
     plot(p) 
 }
 
@@ -728,7 +760,7 @@ copynumbR.heatmap <- function
 (eset,
 ### ExpressionSet, typically created with copynumbR.read.segmented
 window=1000000,
-### Window size in base pairs. Copy numbers will be averaged in each window
+### Window size in base pairs. Copy numbers will the median in each window
 gain=0.1,
 ### Minimum log2 ratio for a copy number gain
 loss=-0.1,
@@ -753,19 +785,27 @@ hide.labels=FALSE,
 ### Hide the sample labels on the bottom
 ylab=("Chromosome"),
 ### The y-axis label
-centromer.file=system.file("extdata", "hg18centromer.txt",
-package="copynumbR")
-### File containing the centromer locations for each chromosome
+centromere.file="hg18"
+### File containing the centromere locations for each chromosome
+### These files are already provided for hg17-hg19
+###  curl -s
+### "http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
+### gunzip -c | grep acen
 ) {
     sampleNames(eset) <- make.names(sampleNames(eset))
     eset <- eset[featureData(eset)[[1]]>= from.chr & featureData(eset)[[1]] <=
         to.chr] 
 
+    max.chr <- max(featureData(eset)$chrom)
+    min.chr <- min(featureData(eset)$chrom)
+    if (max.chr < to.chr) to.chr <- max.chr
+    if (min.chr > from.chr) from.chr <- min.chr
+
     if (is.null(Colv)) {
         Colv <- hclustfun(distfun(eset))
     }
     
-    if (!is.na(Colv)) eset <- eset[,Colv$order]
+    if ("hclust" %in% class(Colv)) eset <- eset[,Colv$order]
 
     if (!is.null(start)) {
         idx <- (featureData(eset)[[1]]== from.chr &
@@ -775,7 +815,7 @@ package="copynumbR")
         eset <- eset[ , order(apply(exprs(eset)[idx,],2,mean),decreasing=TRUE)]
     } 
 
-    hg18 <- .getCentromer(eset, centromer.file)
+    hg18 <- .getCentromere(eset, centromere.file)
 
     pos <- sapply(featureData(eset)[[1]], function(x) cumsum(hg18$chrl)[x]) +
     featureData(eset)[[2]] - sapply(featureData(eset)[[1]], function(x)
@@ -828,8 +868,8 @@ package="copynumbR")
             90, hjust = 1))
         p1 <- p1 +     
             scale_y_continuous(minor_breaks=cumsum(hg18$chrl)/window*s,
-        breaks=round(hg18$centromer[,1]/window*s)
-        ,labels=hg18$chrs[1:22], trans=reverse_trans(),
+        breaks=round(hg18$centromere[from.chr:to.chr,1]/window*s)
+        ,labels=hg18$chrs, trans=reverse_trans(),
         limits=c(cumsum(hg18$chrl)[to.chr+1]/window*s,from.chr-1))
     } else {
         p1 <- ggplot(df.stack, aes(x=ind, y=Begin, alpha=alpha,
@@ -846,23 +886,23 @@ package="copynumbR")
     ylab(ylab)+ scale_fill_identity(labels=1:3,
     breaks=colx)+theme_classic2()+theme(axis.text.x = element_text(angle = 90,
     hjust = 1),legend.position="none")
-    if (is.na(Colv)) {
+    if (!("hclust" %in% class(Colv))) {
         if (plot) print(p1)
         return(list(p1))
-    } else {
-        Colv$labels <- ""
-        if (plot) {
-            tmp <- theme(plot.margin = unit(rep(0.1,4), "lines"))
-            xtmp <- tmp
-            if (hide.labels) xtmp <- tmp +
-                theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())
+    }
 
-            grid.newpage()
-            print(p2+tmp, vp=viewport(0.8, 0.2, x=0.42, y=0.92))
-            print(p1+xtmp, vp=viewport(0.8, 0.84, x=0.4, y=0.47))
-        }
-        p2 <- ggdendrogram(dendro_data(Colv))
-    }     
+    p2 <- ggdendrogram(dendro_data(Colv))
+    Colv$labels <- ""
+    if (plot) {
+        tmp <- theme(plot.margin = unit(rep(0.1,4), "lines"))
+        xtmp <- tmp
+        if (hide.labels) xtmp <- tmp +
+            theme(axis.text.x=element_blank(),axis.ticks.x=element_blank())
+
+        grid.newpage()
+        print(p2+tmp, vp=viewport(0.8, 0.2, x=0.42, y=0.92))
+        print(p1+xtmp, vp=viewport(0.8, 0.84, x=0.4, y=0.47))
+    }
     list(p1,p2)
 ### List of two ggplot2 objects (dendrogram and heatmap)    
 }
@@ -871,7 +911,7 @@ attr(copynumbR.heatmap,"ex") <- function(){
     library(copynumbR)
     clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
     eset <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
-    p <- copynumbR.heatmap(eset)
+    p <- copynumbR.heatmap(eset, centromere.file="hg17")
 }
 
 
