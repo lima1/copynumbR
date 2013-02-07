@@ -29,4 +29,14 @@ data}
 
 
 
+\examples{
+library(copynumbR)
+clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
 
+eset.genes <- copynumbR.read.segmented(system.file("extdata",
+ "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE)
+
+# We don't have matched expression data, so we use the copy number instead
+# for this example
+copynumbR.boxplot(eset.genes, eset.genes, probeset="MYC")
+}
