@@ -421,9 +421,13 @@ clinical,
 data.col=10, 
 ### Sample data starts at this column
 id.col = 1, 
-### The column of the matching sample ids in the clinical data.frame  
-os.col = NULL,
-os.event.col=NULL,dss.col= NULL, dss.event.col=NULL) {
+### The column of the matching sample ids in the clinical data.frame
+post.process.fun = NULL,
+### A function to manipulate the final ExpressionSet (adding a Surv obj for
+### example)
+...
+### Additional arguments passed to post.process.fun
+) {
     edata = data[,data.col:ncol(data)]
     edata = edata[, colnames(edata) %in% as.character(clinical[[id.col]]) ]
     if (ncol(edata) == 0) {
@@ -458,28 +462,31 @@ os.event.col=NULL,dss.col= NULL, dss.event.col=NULL) {
     }    
     else eset = new("ExpressionSet", exprs = as.matrix(edata),
 phenoData=pd)
-
-    if (!is.null(os.col)) { 
-        eset$os.surv = Surv(as.numeric(eset[[os.col]]),
-            eset[[os.event.col]])
-        eset = .attachWaldPV(eset)    
-    }        
-    if (!is.null(dss.col)) {
-        eset$dss.surv = Surv(eset[[dss.col]], eset[[dss.event.col]])
-        eset = .attachWaldPV(eset, col="dss.surv",field="dss")    
-    }    
+    
+    if (!is.null(post.process.fun)) eset <- post.process.fun(eset, ...)
     eset     
 # An ExpressionSet object    
 }    
 
-.attachWaldPV <- function(eset, col="os.surv", field="os") {
-        ft = lapply(1:nrow(eset), function(i) coxph(formula = eset[[col]] ~
-            exprs(eset)[i,], data = eset))
-        pv = sapply(ft, function(x) 1 - pchisq(as.vector(x$wald.test),1))
-        hr = sapply(ft, function(x) x$coef)
-        featureData(eset)[[field]] = data.frame(pv = pv, hr = hr)
+attr(copynumbR.eset,"ex") <- function(){
+    library(copynumbR)
+    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+
+    data <- read.delim(system.file("extdata/gistic_stransky_bladder",
+    "broad_values_by_arm.txt", package="copynumbR"),stringsAsFactors=FALSE)
+    
+    # add an example post.process.fun. makes it easy to change the annotation
+    .curateGender <- function(eset, ...) {
+        eset$GENDER.2 <- as.factor(as.character(ifelse(eset$GENDER=="M", "male",
+            "female")))
         eset
+    }
+
+    eset <- copynumbR.eset(data, clinical, data.col=2, post.process.fun=.curateGender)
+    
+    eset$GENDER.2
 }
+
 
 copynumbR.boxplot <- function
 ### A boxplot showing correlation of copy number and Expression for matched
