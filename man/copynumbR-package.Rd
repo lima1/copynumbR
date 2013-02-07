@@ -12,24 +12,25 @@ Date: \tab 2012-03-02\cr
 Author: \tab Markus Riester\cr
 Maintainer: \tab Markus Riester <markus@jimmy.harvard.edu>\cr
 LazyData: \tab true\cr
-LazyLoad: \tab true\cr
 Imports: \tab 
 CNTools,
 Biobase,
 ggplot2(>= 0.9.2),
 TTR,
 bioDist,
-plyr,
+plyr(>= 1.8),
 RColorBrewer,
 scales,
 grid,
-xts,
+xts(>= 0.9),
 ggdendro,
+biomaRt,
 Ringo\cr
 Depends: \tab 
-R (>= 2.10.0),
+R (>= 2.11.0),
 Biobase,
-CNTools\cr
+CNTools,
+TTR\cr
 License: \tab GPL-3\cr
 URL: \tab https://github.com/lima1/copynumbR\cr}
 }

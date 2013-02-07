@@ -246,20 +246,6 @@ attr(copynumbR.gistic.armplot,"ex") <- function(){
 }
 
 
-copynumbR.tcga.input <- function(path=".", output="tcga.txt", verbose=TRUE,
-grepregex="\\.data.txt", row.names=1, var.column=1) {
-    files = dir(paste(path, sep="/"), full.names=TRUE)
-    files = files[grep(grepregex, files)]
-    if (verbose) cat("Reading", files,sep="\n") 
-    data <- lapply(files, read.delim, stringsAsFactors=FALSE,
-        row.names=row.names, as.is=TRUE)
-    cdata <- do.call(cbind, lapply(data, function(X) X[,var.column]))
-    colnames(cdata) <-  gsub("^.*TCGA-","TCGA-", files)
-    rownames(cdata) <-  rownames(data[[1]])
-    write.table(cdata, file=output, quote=FALSE, sep="\t") 
-    cdata
-}
-
 copynumbR.tcga.write.gisticinput <- function
 ### Create a GISTIC input file from TCGA Level 3 data
 (path=".", 
@@ -724,8 +710,6 @@ centromere.file="hg18"
 ### "http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
 ### gunzip -c | grep acen
 ) {
-    require(xts)
-
     max.chr <- max(sapply(esets, function(X) max(featureData(X)$chrom))) 
     min.chr <- min(sapply(esets, function(X) min(featureData(X)$chrom))) 
     if (max.chr < to.chr) to.chr <- max.chr
@@ -963,7 +947,7 @@ base_family = ""
        ensembl <- useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
     }
     x <-getBM(c("hgnc_symbol", "chromosome_name", "transcript_start",
-        "transcript_end"), values=chromosome, filter="chromosome_name", ensembl)
+        "transcript_end"), values=chromosome, filters="chromosome_name", ensembl)
     x <- x[x$transcript_start > start & x$transcript_end < end &
     x$hgnc_symbol != "",]
     x[!duplicated(x$hgnc_symbol),] 

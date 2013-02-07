@@ -7,23 +7,24 @@ Author: Markus Riester
 Maintainer: Markus Riester <markus@jimmy.harvard.edu>
 Description: Copy number helper functions, mainly for visualizing and working with TCGA
 LazyData: true
-LazyLoad: true
 Imports: 
     CNTools,
     Biobase, 
     ggplot2(>= 0.9.2), 
     TTR, 
     bioDist, 
-    plyr, 
+    plyr(>= 1.8), 
     RColorBrewer, 
     scales,
     grid, 
-    xts, 
+    xts(>= 0.9), 
     ggdendro,
+    biomaRt,
     Ringo
 Depends: 
-    R (>= 2.10.0), 
+    R (>= 2.11.0), 
     Biobase,
-    CNTools
+    CNTools,
+    TTR
 License: GPL-3
 URL: https://github.com/lima1/copynumbR
