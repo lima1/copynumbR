@@ -7,7 +7,7 @@ data}
     -0.1, 0.1, 0.9, Inf), cutoff.labels = c("High Loss", "Loss", 
     "Normal", "Gain", "Amplification"), probesets = NULL, min.samples = 3, 
     sqrt = FALSE, highlight = NULL, highlight.labels = NULL, 
-    xlab = "Copy Number", ylab = "Expression")}
+    xlab = "Copy Number", ylab = "Expression", outlier.shape = NA)}
 \arguments{
   \item{eset.cn}{ExpressionSet with copy number data. The featureNames must correspond to
 the eset.expr provided next. Typically created with
@@ -26,6 +26,7 @@ obviously only useful for already filtered ExpressionSets.}
   \item{highlight.labels}{The label of these highlighted samples shown in the legend}
   \item{xlab}{The label of the x-axis}
   \item{ylab}{The label of the y-axis}
+  \item{outlier.shape}{Display outliers? Passed to geom_boxplot()}
 }
 
 \value{A ggplot2 object.    }
@@ -40,9 +41,16 @@ library(copynumbR)
 clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
 
 eset.genes <- copynumbR.read.segmented(system.file("extdata",
- "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE)
+    "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE,
+    geneMap=geneMap_hg17)
 
-# We don't have matched expression data, so we use the copy number instead
-# for this example
-copynumbR.boxplot(eset.genes, eset.genes, probeset="MYC")
+# load matched expression data
+data(PMID17099711.GPL91_eset)
+
+# get the samples with matching expression data
+isc <- intersect(sampleNames(eset.genes),
+    sampleNames(PMID17099711.GPL91_eset))
+
+copynumbR.boxplot(eset.genes[,isc], PMID17099711.GPL91_eset[,isc],
+    probeset=c("MYC", "ADCY8"))
 }

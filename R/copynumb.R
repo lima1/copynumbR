@@ -1,4 +1,4 @@
-copynumbR.gistic.read.lesions <- function
+copynumbR.gistic.read.lesions <- structure(function
 ### Read GISTIC all_lesions file
 (filename, 
 ### The filename of the GISTIC output file
@@ -15,9 +15,7 @@ data.col=10,
     data <- data[grep("^Actual Copy", data[,9]),]
     copynumbR.eset(data, clinical,data.col,...)
 ### ExpressionSet containing the significant GISTIC output    
-}
-
-attr(copynumbR.gistic.read.lesions,"ex") <- function(){
+},ex=function(){
     library(copynumbR)
     clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
     eset <-
@@ -29,9 +27,9 @@ attr(copynumbR.gistic.read.lesions,"ex") <- function(){
     
     # show the copy number distributions of all recurrent alterations
     boxplot(t(exprs(eset)))
-}
+})
 
-copynumbR.gistic.read.genes <- function
+copynumbR.gistic.read.genes <- structure(function
 ### Read GISTIC all_data_by_genes file
 (filename, 
 ### The filename of the GISTIC output file
@@ -50,9 +48,7 @@ data.col=4,
     eset
 ### ExpressionSet containing the copy numbers for all genes as estimated by
 ### GISTIC
-}
-
-attr(copynumbR.gistic.read.genes,"ex") <- function(){
+},ex=function(){
     library(copynumbR)
     clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
     eset <-
@@ -61,7 +57,7 @@ attr(copynumbR.gistic.read.genes,"ex") <- function(){
 
     # show the copy number distribution of MYC copy numbers
     boxplot(exprs(eset)["MYC",])
-}
+})
 
 copynumbR.gistic.write.arrayfile <- function
 ### Write GISTIC input arrayfile 
@@ -496,7 +492,7 @@ attr(copynumbR.eset,"ex") <- function(){
 }
 
 
-copynumbR.boxplot <- function
+copynumbR.boxplot <- structure(function
 ### A boxplot showing correlation of copy number and expression for matched
 ### data
 (eset.cn, 
@@ -525,8 +521,10 @@ highlight.labels=NULL,
 ### The label of these highlighted samples shown in the legend
 xlab="Copy Number",
 ### The label of the x-axis
-ylab="Expression"
+ylab="Expression",
 ### The label of the y-axis
+outlier.shape=NA
+### Display outliers? Passed to geom_boxplot()
 ) {
 
     if (!is.null(probesets)) {
@@ -553,7 +551,7 @@ ylab="Expression"
         d.f$Group])
 
     p <- ggplot(d.f,
-    aes(Group,Expr))+geom_boxplot(outlier.shape = NA )
+    aes(Group,Expr))+geom_boxplot(outlier.shape = outlier.shape )
     if (sqrt)
     p <- p + scale_y_sqrt(breaks=trans_breaks("sqrt",function(x) x ^
     2)(c(1,1:8*500)))
@@ -564,19 +562,24 @@ ylab="Expression"
     }
     p
 ### A ggplot2 object.    
-}
-
-attr(copynumbR.boxplot,"ex") <- function(){
+},ex=function(){
     library(copynumbR)
     clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
 
     eset.genes <- copynumbR.read.segmented(system.file("extdata",
-     "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE)
+        "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE,
+        geneMap=geneMap_hg17)
+    
+    # load matched expression data
+    data(PMID17099711.GPL91_eset)
+    
+    # get the samples with matching expression data
+    isc <- intersect(sampleNames(eset.genes),
+        sampleNames(PMID17099711.GPL91_eset))
 
-    # We don't have matched expression data, so we use the copy number instead
-    # for this example
-    copynumbR.boxplot(eset.genes, eset.genes, probeset="MYC")
-}
+    copynumbR.boxplot(eset.genes[,isc], PMID17099711.GPL91_eset[,isc],
+        probeset=c("MYC", "ADCY8"))
+})
 
 
 copynumbR.boxplot.single <- function(cn, expr,
@@ -659,8 +662,10 @@ res <- res[lapply(res, function(x) sum(as.vector(x))) > min.samples]
         df <- rbind(df, data.frame(Begin=pos,field=dels*-1, type="Loss"))
         df$Begin <- round(df$Begin/window)
         x <- df$field
-        df$field <- SMA(df$field,sma+1)
-        df$field[1:sma] <- x[1:sma]
+        if (sma>1) {
+            df$field <- SMA(df$field,sma+1)
+            df$field[1:sma] <- x[1:sma]
+        }
         df$label <- label
         df.1 <- ddply(df[df$type=="Gain",], "Begin", function(x)
             data.frame(field=median(x[,2]),type=x[1,3],label=x[1,4]))
@@ -681,7 +686,7 @@ res <- res[lapply(res, function(x) sum(as.vector(x))) > min.samples]
 }
 
 
-copynumbR.plot <- function
+copynumbR.plot <- structure(function
 ### Chromosome frequency plot
 (esets,
 ### List of ExpressionSets
@@ -732,9 +737,7 @@ centromere.file="hg18"
         element_line(size = 0.4, colour =
             'white'),panel.grid.major=element_line(linetype="blank"))
 ### A ggplot2 object
-}
-
-attr(copynumbR.plot,"ex") <- function(){
+},ex=function(){
     library(copynumbR)
     clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
     eset <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
@@ -747,10 +750,10 @@ attr(copynumbR.plot,"ex") <- function(){
         "Invasive"=eset[,!idx.noninvasive])
     
     # now compare the copy numbers of these two groups
-    p <- copynumbR.plot(eset.stage, centromere.file="hg17")
+    p <- copynumbR.plot(eset.stage, centromere.file="hg17", sma=0)
 
     plot(p) 
-}
+})
 
 .fillStacked <- function(X) {
     Y <- do.call(rbind, lapply(2:nrow(X), function(i) if (X[i-1,2] ==
@@ -897,8 +900,9 @@ centromere.file="hg18"
         return(list(p1))
     }
 
-    p2 <- ggdendrogram(dendro_data(Colv))
     Colv$labels <- ""
+    p2 <- ggdendrogram(dendro_data(Colv))
+
     if (plot) {
         tmp <- theme(plot.margin = unit(rep(0.1,4), "lines"))
         xtmp <- tmp

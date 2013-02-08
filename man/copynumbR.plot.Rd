@@ -44,7 +44,7 @@ eset.stage <- list("Non-Muscle-Invasive"=eset[,idx.noninvasive],
     "Invasive"=eset[,!idx.noninvasive])
 
 # now compare the copy numbers of these two groups
-p <- copynumbR.plot(eset.stage, centromere.file="hg17")
+p <- copynumbR.plot(eset.stage, centromere.file="hg17", sma=0)
 
 plot(p) 
 }

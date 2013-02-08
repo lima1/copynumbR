@@ -26,5 +26,7 @@ Depends:
     Biobase,
     CNTools,
     TTR
+Suggests:
+    xtable
 License: GPL-3
 URL: https://github.com/lima1/copynumbR

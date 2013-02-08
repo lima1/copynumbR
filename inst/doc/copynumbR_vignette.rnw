@@ -1,0 +1,195 @@
+%\VignetteKeywords{Database}
+%\VignetteDepends{curatedOvarianData}
+%\VignettePackage{curatedOvarianData}
+%\VignetteIndexEntry{curatedOvarianData}
+
+\input{preamble.tex}
+\title{\Huge{{\bf copynumbR}}}
+\author{
+Markus Riester, Eric Holland, Franziska Michor}
+\begin{document}
+\date{2013}
+
+\maketitle
+\tableofcontents
+
+<<preliminaries,echo=FALSE,results=hide>>=
+library(copynumbR)
+options(width=60)
+@ 
+
+
+\section{Introduction}
+
+This package provides helper functions for working with segmented copy number
+data. Its focus is on visualizing the data in publication quality. It further
+ships with functions for parsing GISTIC output files, a commonly used software
+for identifying recurrent copy number gains and losses. 
+
+\section{Tutorial}
+
+\subsection{Visualization of the complete data}
+Modern SNP array data from manufacturers such as Affymetrix provide
+high-resolution copy number information along the genome. To speed-up
+calculation times and lower disk space requirements of this tutorial, we use an
+old low-resolution CGH dataset published by \cite{Stransky:2006}. The
+\texttt{copynumbR} package uses Bioconductor's \texttt{ExpressionSet} objects for all
+copy number data. We now load the segmented data and matching clinical information:
+
+<<load>>=
+clinical <- read.csv(system.file("extdata", 
+    "stransky_bladder_clinical.csv", package="copynumbR"))
+eset <- copynumbR.read.segmented(system.file("extdata", 
+    "stransky_bladder.glad", package="copynumbR"), clinical)
+@
+
+A frequency plot is a very informative visualization that shows the major
+alterations nicely. The \texttt{copynumbR} package allows to stratify the
+samples easily, for example to illustrate the difference in chromosomal
+instability of early- and late-stage patients (Fig. \ref{fig:frequency}):
+
+<<preparefrequency>>=
+# find the non-muscle-invasive samples
+idx.noninvasive <- grepl("Ta|T1", eset$T)
+
+# create a list of ExpressionSets with the low- and high stage samples
+eset.stage <- list("Non-Muscle-Invasive"=eset[,idx.noninvasive],
+    "Invasive"=eset[,!idx.noninvasive])
+
+# now compare the copy numbers of these two groups.
+# because the data is low-resolution, we do not do any smoothing (sma=1) 
+p <- copynumbR.plot(eset.stage, centromere.file="hg17", sma=1)
+@
+
+\begin{figure}
+\centering
+<<frequency, fig=TRUE, width=12>>=
+plot(p)
+@
+\caption{Frequency plot comparing early- and late-stage bladder cancer copy
+number \citep{Stransky:2006}. Note that the CGH data used in this example
+provides only low resolution. Modern SNP array platforms provide a much higher
+resolution and a less blurry picture of the true copy numbers.}
+\label{fig:frequency}
+\end{figure}
+
+A heatmap provides a finer look at the data and is useful in identifying
+clusters (Fig.~\ref{fig:heatmap}). We clearly see a cluster with only limited
+chromosomal instability, which was confirmed in various recent publications
+\citep{Lindgren:2010,Hurst:2012}.
+
+\begin{figure}
+\centering
+<<heatmap, fig=TRUE>>=
+p <- copynumbR.heatmap(eset, centromere.file="hg17")
+@
+\caption{A heatmap of the bladder copy number data \citep{Stransky:2006}.}
+\label{fig:heatmap}
+\end{figure}
+
+\subsection{GISTIC}
+
+The GISTIC 2.0 software \citep{Mermel:2011} has been established as
+gold-standard for identifying recurrent copy number alterations in a cohort. We
+provide a few helper functions for parsing GISTIC output. We load the significant GISTIC peaks, the genomic loci which are found in significantly more patients than expected by chance, and their copy numbers:
+
+<<lesions>>=
+eset.gistic.lesions <-
+    copynumbR.gistic.read.lesions(
+        system.file("extdata/gistic_stransky_bladder",
+        "all_lesions.conf_95.txt", package="copynumbR"), clinical)
+
+# list all recurrent gains and losses
+featureData(eset.gistic.lesions)$Descriptor
+@
+GISTIC further identifies potential driver genes of recurrent focal alterations. We can get these genes with the 
+\texttt{copynumbR.gistic.genes.band} function:
+
+<<band>>=
+band <- copynumbR.gistic.genes.band(
+    system.file("extdata/gistic_stransky_bladder",
+    "amp_genes.conf_95.txt", package="copynumbR"), "8q24.21")
+band
+@
+
+We can get a quick overview of all focal amplifcation with the
+\texttt{copynumbR.gistic.focal} function (Table~\ref{tbl:focal}): 
+
+<<focal, results=tex>>=
+focal <-
+    copynumbR.gistic.focal(eset.gistic.lesions, 
+        system.file("extdata/gistic_stransky_bladder", 
+            "amp_genes.conf_95.txt", package="copynumbR"),
+        system.file("extdata/gistic_stransky_bladder",
+            "del_genes.conf_95.txt", package="copynumbR")
+    )
+library(xtable)
+print(xtable(focal[, -c(6,7,9)],
+caption="Table of focal alterations identified with GISTIC 2.0.",
+label="tbl:focal"),
+include.rownames=FALSE)
+@
+GISTIC is also helpful in idenfying broad events, which span over a specified percentage of a whole chromosome arm. A nice way of visualizing these broad events is with our armplot (Fig.~\ref{fig:armplot}):
+
+\begin{figure}
+\centering
+<<armplot, fig=TRUE>>=
+res <-
+    copynumbR.gistic.armplot(file=
+        system.file("extdata/gistic_stransky_bladder", 
+            "broad_values_by_arm.txt", package="copynumbR")
+    )
+
+plot(res$plot)
+@
+\caption{Broad copy numbers at the p- and q-arms in the bladder cancer cohort
+\citep{Stransky:2006}.
+Each point represents a patient and its $\log_2$ copy number ratios of the p-
+and q-arms.}
+\label{fig:armplot}
+\end{figure}
+
+\section{Matched Expression Data}
+
+This package provides a visualization for the correlation of copy number and
+expression for a limited number of genes.  We use boxplots and stratify samples
+by copy number homozygous loss, loss, gain and amplification
+(Fig.~\ref{fig:boxplot}):
+
+\begin{figure}
+\centering
+<<boxplot, fig=TRUE>>=
+library(ggplot2)
+
+# get the segmented data annotated by known UCSC genes
+eset.genes <- copynumbR.read.segmented(system.file("extdata",
+        "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE,
+        geneMap=geneMap_hg17)
+
+# load matched expression data
+data(PMID17099711.GPL91_eset)
+
+# get the samples with matching expression data
+isc <- intersect(sampleNames(eset.genes),
+    sampleNames(PMID17099711.GPL91_eset))
+
+# our boxplot function returns a ggplot2 object, so we
+# can use ggplots power to customize the boxplot
+copynumbR.boxplot(eset.genes[,isc], PMID17099711.GPL91_eset[,isc],
+    probeset=c("MYC", "ADCY8"))+geom_jitter()
+@
+\caption{Correlation of copy number and expression.}
+\label{fig:boxplot}
+\end{figure}
+
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{copynumbR_vignette}
+\appendix
+
+\section{Session Info}
+<<sessioninfo, echo=FALSE, results=tex>>=
+toLatex(sessionInfo())
+@
+
+\end{document}

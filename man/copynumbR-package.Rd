@@ -31,6 +31,8 @@ R (>= 2.11.0),
 Biobase,
 CNTools,
 TTR\cr
+Suggests: \tab 
+xtable\cr
 License: \tab GPL-3\cr
 URL: \tab https://github.com/lima1/copynumbR\cr}
 }
