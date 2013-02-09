@@ -1,20 +1,20 @@
 copynumbR.gistic.read.lesions <- structure(function
-### Read GISTIC all_lesions file
+### Read GISTIC all_lesions file.
 (filename, 
-### The filename of the GISTIC output file
+### The filename of the GISTIC all_lesions.conf_95.txt output file.
 clinical,
 ### A data frame with clinical annotation for the phenoData slot of the output
-### ExpressionSet
+### ExpressionSet.
 data.col=10, 
 ### Start column of the sample data, no need to change unless GISTIC output
-### changes 
+### changes.
 ...
-### Additional arguments passed to copynumbR.eset()
+### Additional arguments passed to copynumbR.eset().
 ) {
     data <- read.delim(filename, stringsAsFactors=FALSE)
     data <- data[grep("^Actual Copy", data[,9]),]
     copynumbR.eset(data, clinical,data.col,...)
-### ExpressionSet containing the significant GISTIC output    
+### ExpressionSet containing the significant GISTIC focal peaks.
 },ex=function(){
     library(copynumbR)
 
@@ -33,24 +33,24 @@ data.col=10,
 })
 
 copynumbR.gistic.read.genes <- structure(function
-### Read GISTIC all_data_by_genes file
+### Read GISTIC all_data_by_genes file.
 (filename, 
-### The filename of the GISTIC output file
+### The filename of the GISTIC all_data_by_genes.txt output file.
 clinical,
 ### A data frame with clinical annotation for the phenoData slot of the output
-### ExpressionSet
+### ExpressionSet.
 data.col=4, 
 ### Start column of the sample data, no need to change unless GISTIC output
-### changes 
+### changes.
 ...
-### Additional arguments passed to copynumbR.eset()
+### Additional arguments passed to copynumbR.eset().
 ) {
     data <- read.delim(filename, stringsAsFactors=FALSE)
     eset <- copynumbR.eset(data, clinical,data.col,...)
     featureNames(eset) <- featureData(eset)$Gene.Symbol
     eset
 ### ExpressionSet containing the copy numbers for all genes as estimated by
-### GISTIC
+### GISTIC.
 },ex=function(){
     library(copynumbR)
     clinical <- read.csv(system.file("extdata", 
@@ -64,30 +64,30 @@ data.col=4,
 })
 
 copynumbR.gistic.write.arrayfile <- function
-### Write GISTIC input arrayfile 
+### Write GISTIC input arrayfile. 
 (labels, 
-### The sample names as used in the segmented file
+### The sample names as used in the segmented file.
 file
-### The output filename of this function
+### The output filename of this function.
 ) {
     write.table(data.frame(Array=labels),file=file, row.names=FALSE,quote=FALSE)
 }
 
 
 copynumbR.gistic.read.broad <- structure(function
-### Read GISTIC broad_values_by_arm.txt output file
+### Read GISTIC broad_values_by_arm.txt output file.
 (filename="broad_values_by_arm.txt",
-### The filename of the GISTIC output file
+### The filename of the GISTIC broad_values_by_arm.txt output file.
 clinical,
 ### A data frame with clinical annotation for the phenoData slot of the output
-### ExpressionSet
+### ExpressionSet.
 data.col=2, 
 ### Start column of the sample data, no need to change unless GISTIC output
-### changes 
+### changes.
 ...
-### Additional arguments passed to copynumbR.eset()
+### Additional arguments passed to copynumbR.eset().
 ) {
-    data = read.delim(filename, stringsAsFactors=FALSE)
+    data <- read.delim(filename, stringsAsFactors=FALSE)
     copynumbR.eset(data, clinical,data.col,...)
 },ex=function(){
     library(copynumbR)
@@ -102,9 +102,9 @@ data.col=2,
 })
 
 copynumbR.gistic.genes.region <- function
-### Extract GISTIC genes in a specified region
+### Extract GISTIC genes in a specified region.
 (filename, 
-### The GISTIC output file amp_genes.conf_95.txt
+### The filename of the GISTIC output file amp_genes.conf_95.txt.
 region
 ### The region to extract. 
 ) {
@@ -114,21 +114,21 @@ region
     genes <- data[4:nrow(data),idx]
     genes <- genes[genes!=""]
     genes
-### Genes in the specified region    
+### Genes in the specified region.    
 }
 
 copynumbR.gistic.genes.band <- structure(function
-### Extract the GISTIC target genes 
+### Extract the GISTIC target genes. 
 (filename, 
-### The GISTIC output file amp_genes.conf_95.txt
+### The filename of the GISTIC output file amp_genes.conf_95.txt.
 band
-### The chromosome band
+### The chromosome band.
 ) {
     band <- make.names(band)
     data <- read.delim(filename, stringsAsFactors=FALSE)
     lapply(data[3, grepl(band,colnames(data),fixed=TRUE)], function(region)
     copynumbR.gistic.genes.region(filename,region))
-### Genes in the specified chromosome band    
+### Genes in the specified chromosome band.
 },ex=function(){
     library(copynumbR)
     # extract the gene symbols in the GISTIC peak 8q24.21
@@ -141,15 +141,15 @@ copynumbR.gistic.focal <- structure(function
 ### Create a data.frame with all GISTIC focal alterations. Useful for
 ### presentation in knitR/Sweave.
 (eset, 
-### The GISTIC lesions file read with copynumbR.gistic.read.lesions
+### The GISTIC lesions file read with copynumbR.gistic.read.lesions.
 gistic.lesions.file.amp="amp_genes.conf_95.txt",
-### The GISTIC output file amp_genes.conf_95.txt
+### The GISTIC output file amp_genes.conf_95.txt.
 gistic.lesions.file.del="del_genes.conf_95.txt", 
-### The GISTIC output file del_genes.conf_95.txt
+### The GISTIC output file del_genes.conf_95.txt.
 gain=0.1,
-### Minimum log2 ratio for a copy number gain
+### Minimum log2 ratio for a copy number gain.
 loss=-0.1
-### Maximum log2 ratio for a copy number loss
+### Maximum log2 ratio for a copy number loss.
 ) {
         eset <- .addGISTICregion(eset)
         df <- data.frame(Chr = featureData(eset)[[2]], Start =
@@ -162,7 +162,7 @@ loss=-0.1
         "Amplification", sum(exprs(eset)[i,] > gain ), sum(exprs(eset)[i,] < loss)))
         df$Freq <- paste(df$n, " (",round(df$n/ncol(eset)*100,digits=1), "%)", sep="")
         .addGenes(eset, df, gistic.lesions.file.amp, gistic.lesions.file.del)
-
+### A data.frame containing all GISTIC focal amplifcations. 
 },ex=function(){
     library(copynumbR)
 
@@ -229,7 +229,7 @@ ncol=NULL,
 
     }
     gp
-    ### A ggplot2 object
+    ### A ggplot2 object.
 },ex=function(){
     library(copynumbR)
 
@@ -244,17 +244,17 @@ ncol=NULL,
 
 
 copynumbR.tcga.write.gisticinput <- function
-### Create a GISTIC input file from TCGA Level 3 data
+### Create a GISTIC input files (segmented data and array file) from TCGA Level 3 data.
 (path=".", 
-### The path containing the Level_3 folder
+### The path containing the Level_3 folder.
 output.seg="tcga.seg",
-### The GISTIC segemented data input file
+### The GISTIC segemented data input file.
 output.alf = "tcga.alf", 
-### The GISTIC array input file
+### The GISTIC array input file.
 hg="hg18", 
-### The genome version
+### The genome version.
 verbose=TRUE
-### Print some additional progress information
+### Print some additional progress information.
 ) {
     files = dir(paste(path,"Level_3/", sep="/"), full.names=TRUE)
     files = files[grep(paste("\\.",hg,sep=""), files)]
@@ -271,20 +271,27 @@ verbose=TRUE
 }
 
 copynumbR.read.segmented <- structure(function
-### Read segmented data and turn it into an ExpressionSet
+### Read segmented data and turn it into an ExpressionSet.
 (filename, 
-### The filename of segmented data
+### The filename of segmented data.
 clinical, 
 ### A data frame with clinical annotation for the phenoData slot of the output
-### ExpressionSet
+### ExpressionSet.
 gene=FALSE,
 ### Either segments or genes as features. 
 mad=0.0,
-### filter low-variance segments, typically useful for clustering
+### Filter low-variance segments, typically useful for clustering.
+### Calculates the mean absolute deviation across samples
+### for each rows and drops rows that are not above the percentile defined.
 geneMap=NULL,
-### The gene mapping if gene==TRUE. See ?getRS.
+### The gene mapping if gene==TRUE. See ?getRS. Maps for hg17, hg18 and hg19
+### are provided by this package (geneMap_hgXX).
+genes.as.features=TRUE,
+### If gene==TRUE, use genes as feature names. Note that feature names
+### have to be unique and only the first occurence of a gene in the geneMap
+### is used if genes.as.features==TRUE.
 ...
-### Additional arguments passed to the copynumbR.eset function
+### Additional arguments passed to the copynumbR.eset function.
 ) {
     data.col <- ifelse(gene,6,4)
     cn <- read.delim(filename,as.is=TRUE)
@@ -316,16 +323,21 @@ geneMap=NULL,
     eset <- copynumbR.eset(data, clinical, data.col, ...)
     
     # set gene symbols as featureName
-    if (gene) {
+    if (gene && genes.as.features) {
         eset <- eset[!duplicated(featureData(eset)$genename),]
         featureNames(eset) <- featureData(eset)$genename
     }
     
     eset
+### An ExpressionSet.    
 },ex=function(){
     library(copynumbR)
-    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
-    eset <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
+
+    clinical <- read.csv(system.file("extdata", 
+        "stransky_bladder_clinical.csv", package="copynumbR"))
+    eset <- copynumbR.read.segmented(system.file("extdata", 
+        "stransky_bladder.glad", package="copynumbR"), clinical)
+
     # Plot the distribution of copy numbers of segments in all samples
     plot(exprs(eset))
 
@@ -355,23 +367,27 @@ geneMap=NULL,
 }
 
 copynumbR.gistic.clone.eset <- structure(function
-### Extract GISTIC peak copy numbers from segmented data 
+### Extract GISTIC peak copy numbers from segmented data.
 (eset.gistic,
-### An ExpressionSet with GISTIC peaks read with copynumbR.gistic.read.lesions
-eset.segmented)
+### An ExpressionSet with GISTIC peaks read with
+### copynumbR.gistic.read.lesions().
+eset.segmented
 ### An ExpressionSet with segmented data, typically from another cohort,
 ### read with copynumbR.read.segmented. This is useful to compare copy numbers at
 ### GISTIC peaks across cohorts.
-{
-    eset.gistic = .addGISTICregion(eset.gistic)
-    M = t(mapply(rbind, lapply(1:nrow(eset.gistic), .fetchGISTICcopynumber,
-    eset.gistic, eset.segmented)))
-    rownames(M) = rownames(exprs(eset.gistic))
-    colnames(M) = colnames(exprs(eset.segmented))
+){
+    eset.gistic <- .addGISTICregion(eset.gistic)
+    
+    M <- t(mapply(rbind, lapply(1:nrow(eset.gistic), .fetchGISTICcopynumber,
+        eset.gistic, eset.segmented)))
+
+    rownames(M) <- rownames(exprs(eset.gistic))
+    colnames(M) <- colnames(exprs(eset.segmented))
+
     new("ExpressionSet", exprs=M, phenoData = phenoData(eset.segmented),
     featureData= featureData(eset.gistic))
 ### An ExpressionSet containing copy numbers from eset.segmented of the GISTIC peaks    
-### in eset.gistic
+### in eset.gistic.
 },"ex"=function(){
     library(copynumbR)
 
@@ -394,9 +410,7 @@ eset.segmented)
     plot(exprs(eset.gistic)[2,],
          exprs(eset.cloned)[2,], xlab="GISTIC", ylab="Segmented",
          main="MYC Locus")
-
 })
-
 
 .addGenes <- function(eset, df, gistic.lesions.file.amp, gistic.lesions.file.del) {
     if (!is.null(gistic.lesions.file.del)) {
@@ -420,59 +434,65 @@ eset.segmented)
 
 copynumbR.eset <- structure(function
 ### Generate an ExpressionSet from a data.frame containing the data and a
-### data.frame containing clinical data
+### data.frame containing clinical data.
 (data, 
-### data.frame containing genomic data (expression, copy number, ...)
+### A data.frame containing genomic data (expression, copy number, ...).
 clinical, 
-### data.frame containing matched clinical data
-data.col=10, 
-### Sample data starts at this column
+### A data.frame containing matched clinical data.
+data.col=2, 
+### Sample data starts at this column.
 id.col = 1, 
-### The column of the matching sample ids in the clinical data.frame
+### The column of the matching sample ids in the clinical data.frame.
 post.process.fun = NULL,
 ### A function to manipulate the final ExpressionSet (adding a Surv obj for
-### example)
+### example).
 ...
-### Additional arguments passed to post.process.fun
+### Additional arguments passed to post.process.fun().
 ) {
-    edata = data[,data.col:ncol(data)]
-    edata = edata[, colnames(edata) %in% as.character(clinical[[id.col]]) ]
+    edata <- data[,data.col:ncol(data)]
+    edata <- edata[, colnames(edata) %in% as.character(clinical[[id.col]]) ]
+    
+    # Try to be a little bit smart, this is especially useful for matching
+    # TCGA barcodes. So if the colnames of the data do not match, try a few
+    # things before giving up:
     if (ncol(edata) == 0) {
-        edata = data[,data.col:ncol(data)]
-        colnames(edata) = gsub("\\.","-",colnames(edata))
-        if (sum(!substr(clinical[[id.col]],1,1) == "X")==0  &&
-            sum(substr(colnames(edata),1,1) == "X")==0) {
-            colnames(edata) = paste("X", colnames(edata), sep="")
-        }    
+        warning(paste("colnames of data and sample ids in clinical data do",
+        "not match. Trying some fuzzy matching."))
+        edata <- data[,data.col:ncol(data)]
 
-        idx = sapply(clinical[[id.col]], grep, colnames(edata))
-        clinical = clinical[sapply(idx, function(x) length(x) > 0),]
-        idx = sapply(clinical[[id.col]], grep, colnames(edata))
+        # maybe the colnames got converted to valid R names?
+        colnames(edata) <- make.names(colnames(edata))
+        clinical[[id.col]] <- make.names(clinical[[id.col]])
+
+        idx <- sapply(clinical[[id.col]], grep, colnames(edata))
+        clinical <- clinical[sapply(idx, function(x) length(x) > 0),]
+        idx <- sapply(clinical[[id.col]], grep, colnames(edata))
         # multiple samples per patient? take first
-        idx = sapply(idx, function(x) x[[1]])
+        idx <- sapply(idx, function(x) x[[1]])
 
-        edata = edata[, idx]
+        edata <- edata[, idx]
         
-        colnames(edata) = clinical[[id.col]]    
+        colnames(edata) <- clinical[[id.col]]    
     }
-    edata.nn = edata
-    edata = apply(edata,2,as.numeric)
-    colnames(edata) = colnames(edata.nn)
-    rownames(edata) = rownames(edata.nn)
+    edata.nn <- edata
+    edata <- apply(edata,2,as.numeric)
+    colnames(edata) <- colnames(edata.nn)
+    rownames(edata) <- rownames(edata.nn)
 
-    pd=as(data.frame(clinical[match(colnames(edata),clinical[[id.col]]),]),"AnnotatedDataFrame")
-    sampleNames(pd) = colnames(edata)
+    pd <- as(data.frame(clinical[match(colnames(edata),clinical[[id.col]]),]),"AnnotatedDataFrame")
+    sampleNames(pd) <- colnames(edata)
+
     if (data.col > 1) { 
-        fd=as(data.frame(data[,1:(data.col-1)]),"AnnotatedDataFrame")
-        eset = new("ExpressionSet", exprs = as.matrix(edata),
+        fd <- as(data.frame(data[,1:(data.col-1)]),"AnnotatedDataFrame")
+        eset <- new("ExpressionSet", exprs = as.matrix(edata),
             phenoData=pd,featureData=fd)
     }    
-    else eset = new("ExpressionSet", exprs = as.matrix(edata),
+    else eset <- new("ExpressionSet", exprs = as.matrix(edata),
 phenoData=pd)
     
     if (!is.null(post.process.fun)) eset <- post.process.fun(eset, ...)
     eset     
-# An ExpressionSet object    
+# An ExpressionSet.
 },ex=function(){
     library(copynumbR)
     clinical <- read.csv(system.file("extdata", 
@@ -495,42 +515,52 @@ phenoData=pd)
 
 copynumbR.boxplot <- structure(function
 ### A boxplot showing correlation of copy number and expression for matched
-### data
+### data.
 (eset.cn, 
 ### ExpressionSet with copy number data. The featureNames and sampleNames
 ### must correspond to the eset.expr provided next. Typically created with
 ### copynumbR.read.segmented(...,gene=TRUE) or
-### copynumbR.gistic.read.genes(...) 
+### copynumbR.gistic.read.genes(...).
 eset.expr,
 ### ExpressionSet with expression data. See above, the featureNames must
 ### correspond to the ones of eset.cn. So for Affymetrix data for example,
 ### probe sets need to be collapsed (for example with the WGCNA package). 
 cutoffs=c(-Inf,-1.3,-0.1,0.1,0.9,Inf),
-### Copy number cutoffs 
+### Copy number cutoffs.
 cutoff.labels=c("High Loss","Loss","Normal","Gain","Amplification"),
-### The labels of these cutoffs
+### The labels of these cutoffs.
 probesets=NULL, 
 ### Display only these genes. If null, show all genes. That default is 
 ### obviously only useful for already filtered ExpressionSets.
 min.samples=3, 
-### Minimum number of samples in each cutoff category
+### Minimum number of samples in each cutoff category.
 sqrt=FALSE,
 ### Square root transform the data for read counts?
 xlab="Copy Number",
-### The label of the x-axis
+### The label of the x-axis.
 ylab="Expression",
-### The label of the y-axis
+### The label of the y-axis.
 outlier.shape=NA
-### Display outliers? Passed to geom_boxplot()
+### Display outliers? Passed to geom_boxplot().
 ) {
+    
+    if (ncol(eset.cn) != ncol(eset.expr)) 
+        stop("Number of samples do not match for eset.cn and eset.expr.")
+    
+    # if sampleNames are different, give only a warning, might be still
+    # the correct order.
+    if (all(sampleNames(eset.cn) == sampleNames(eset.expr))!=TRUE) 
+        warning("sampleNames() of eset.cn and eset.expr do not match.")
 
     if (!is.null(probesets)) {
         eset.cn <- eset.cn[probesets,]
         eset.expr <- eset.expr[probesets,]
     }
+
     if (all(featureNames(eset.cn) == featureNames(eset.expr))!=TRUE) {
         stop("featureNames() of eset.cn and eset.expr do not match")
     }
+
     res <- lapply(2:length(cutoffs), function(i)
         apply(exprs(eset.cn),1, function(x) x>cutoffs[i-1]
         & x <=cutoffs[i]))
@@ -663,34 +693,34 @@ outlier.shape=NA
 
 
 copynumbR.plot <- structure(function
-### Chromosome frequency plot
+### Chromosome frequency plot.
 (esets,
-### List of ExpressionSets
+### List of ExpressionSets with segmented copy number data.
 window=500000,
-### Window size in base pairs. Copy numbers will be the median in each window
+### Window size in base pairs. Copy numbers will be the median in each window.
 labels=paste(names(esets), " (n = ", sapply(esets, ncol),")", sep=""),
 ### The labels of the ExpressionSets.
 gain=0.1,
-### Minimum log2 ratio for a copy number gain
+### Minimum log2 ratio for a copy number gain.
 loss=-0.1,
-### Maximum log2 ratio for a copy number loss
+### Maximum log2 ratio for a copy number loss.
 sma=10,
-### Smooth copy numbers with a simple moving average
+### Smooth copy numbers with a simple moving average.
 from.chr=1,
-### Start plotting at this chromosome
+### Start plotting at this chromosome.
 to.chr=22,
-### End plotting at this chromosome
+### End plotting at this chromosome.
 ylab="Loss / Gain",
-### The y-axis label
+### The y-axis label.
 xlab="Chromosome",
-### The x-axis label
+### The x-axis label.
 centromere.file="hg18"
 ### File containing the centromere locations for each chromosome.
-### These files are already provided for hg17-hg19
-###  curl -s
-### "http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
-### gunzip -c | grep acen
-### Select these with centromere.file=c("hg17", "hg18","hg19")
+### These files are already provided for hg17-hg19.
+### Select these with centromere.file=c("hg17", "hg18","hg19").
+##note<< The centromere files were generated with: \code{curl -s
+## "http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
+## gunzip -c | grep acen}
 ) {
     max.chr <- max(sapply(esets, function(X) max(featureData(X)$chrom))) 
     min.chr <- min(sapply(esets, function(X) min(featureData(X)$chrom))) 
@@ -713,7 +743,7 @@ centromere.file="hg18"
         theme(panel.grid.minor =
         element_line(size = 0.4, colour =
             'white'),panel.grid.major=element_line(linetype="blank"))
-### A ggplot2 object
+### A ggplot2 object.
 },ex=function(){
     library(copynumbR)
 
@@ -746,42 +776,44 @@ centromere.file="hg18"
 }
 
 copynumbR.heatmap <- structure(function
-### Chromosome Heatmap
+### Plot a chromosome heatmap.
 (eset,
-### ExpressionSet, typically created with copynumbR.read.segmented
+### An ExpressionSet, typically created with copynumbR.read.segmented().
 window=1000000,
-### Window size in base pairs. Copy numbers will the median in each window
+### Window size in base pairs. Copy numbers will be the median in each window.
 gain=0.1,
-### Minimum log2 ratio for a copy number gain
+### Minimum log2 ratio for a copy number gain.
 loss=-0.1,
-### Maximum log2 ratio for a copy number loss
+### Maximum log2 ratio for a copy number loss.
 Colv=NULL,  
-### Cluster columns.
+### Hierarchical clustering of class hclust of the columns. 
+### If NULL, then calculated as specified by distfun and hclustfun.
+### If NA, no ordering of columns is done.
 distfun = spearman.dist, 
-### The distance function if Colv is NULL
+### The distance function if Colv is NULL.
 hclustfun = hclust, 
-### The cluster function if Colv is NULL
+### The cluster function if Colv is NULL.
 from.chr=1,
-### Start plotting at this chromosome
+### Start plotting at this chromosome.
 to.chr=22,
-### End plotting at this chromosome
+### End plotting at this chromosome.
 start=NULL, 
 end=NULL,
 ensembl=NULL, 
 plot=TRUE, 
 ### Plot the heatmap, otherwise the dendrogram and heatmap are returned as
-### list of ggplot2 objects
+### list of ggplot2 objects.
 hide.labels=FALSE,
-### Hide the sample labels on the bottom
+### Hide the sample labels on the bottom.
 ylab=("Chromosome"),
-### The y-axis label
+### The y-axis label.
 centromere.file="hg18"
 ### File containing the centromere locations for each chromosome.
-### These files are already provided for hg17-hg19
-###  curl -s
-### "http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
-### gunzip -c | grep acen
-### Select these with centromere.file=c("hg17", "hg18","hg19")
+### These files are already provided for hg17-hg19.
+### Select these with centromere.file=c("hg17", "hg18","hg19").
+##note<< The centromere files were generated with: \code{curl -s
+## "http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
+## gunzip -c | grep acen}
 ) {
     sampleNames(eset) <- make.names(sampleNames(eset))
     eset <- eset[featureData(eset)[[1]]>= from.chr & featureData(eset)[[1]] <=
@@ -896,7 +928,7 @@ centromere.file="hg18"
         print(p1+xtmp, vp=viewport(0.8, 0.84, x=0.4, y=0.47))
     }
     list(heatmap=p1,dendrogram=p2)
-### List of two ggplot2 objects (heatmap and dendrogram)
+### List of two ggplot2 objects (heatmap and dendrogram).
 },ex=function(){
     library(copynumbR)
 
@@ -910,12 +942,12 @@ centromere.file="hg18"
 })
 
 
-theme_classic2 <- function
-### A simple ggplot2 theme, no fancy stuff
+theme_classic2 <- structure(function
+### A simple ggplot2 theme, no fancy stuff.
 (base_size = 12, 
-### Theme base font size
+### Theme base font size.
 base_family = ""
-### Theme base font family
+### Theme base font family.
 ) 
 {
     theme_grey(base_size = base_size, base_family = base_family) %+replace% 
@@ -929,7 +961,28 @@ base_family = ""
               panel.margin     = unit(0.75, "lines"),
               strip.background = element_rect(fill = NA, colour = "black",linetype="blank"), 
               strip.text.x = element_text(face="bold"))
-}
+},ex=function(){
+    library(copynumbR)
+
+    clinical <- read.csv(system.file("extdata", 
+        "stransky_bladder_clinical.csv", package="copynumbR"))
+
+    eset <- copynumbR.read.segmented(system.file("extdata", 
+        "stransky_bladder.glad", package="copynumbR"), clinical)
+
+    # find the non-muscle-invasive samples
+    idx.noninvasive <- grepl("Ta|T1", eset$T)
+    
+    # create a list of ExpressionSets with the low- and high stage samples
+    eset.stage <- list("Non-Muscle-Invasive"=eset[,idx.noninvasive],
+        "Invasive"=eset[,!idx.noninvasive])
+    
+    # now compare the copy numbers of these two groups
+    p <- copynumbR.plot(eset.stage, centromere.file="hg17", sma=0)
+
+    plot(p+theme_classic2(14)) 
+})
+
 
 .getGenesRegion <- function(chromosome, start, end, ensembl=NULL) {
     if (is.null(ensembl)) {

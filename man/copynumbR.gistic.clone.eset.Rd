@@ -1,16 +1,18 @@
 \name{copynumbR.gistic.clone.eset}
 \alias{copynumbR.gistic.clone.eset}
 \title{copynumbR gistic clone eset}
-\description{Extract GISTIC peak copy numbers from segmented data }
+\description{Extract GISTIC peak copy numbers from segmented data.}
 \usage{copynumbR.gistic.clone.eset(eset.gistic, eset.segmented)}
 \arguments{
-  \item{eset.gistic}{An ExpressionSet with GISTIC peaks read with copynumbR.gistic.read.lesions}
-  \item{eset.segmented}{
-}
+  \item{eset.gistic}{An ExpressionSet with GISTIC peaks read with
+copynumbR.gistic.read.lesions().}
+  \item{eset.segmented}{An ExpressionSet with segmented data, typically from another cohort,
+read with copynumbR.read.segmented. This is useful to compare copy numbers at
+GISTIC peaks across cohorts.}
 }
 
 \value{An ExpressionSet containing copy numbers from eset.segmented of the GISTIC peaks    
-in eset.gistic}
+in eset.gistic.}
 
 \author{Markus Riester}
 
@@ -39,5 +41,4 @@ eset.cloned <- copynumbR.gistic.clone.eset(eset.gistic, eset.segmented)
 plot(exprs(eset.gistic)[2,],
      exprs(eset.cloned)[2,], xlab="GISTIC", ylab="Segmented",
      main="MYC Locus")
-
 }

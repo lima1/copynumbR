@@ -2,17 +2,17 @@
 \alias{copynumbR.eset}
 \title{copynumbR eset}
 \description{Generate an ExpressionSet from a data.frame containing the data and a
-data.frame containing clinical data}
-\usage{copynumbR.eset(data, clinical, data.col = 10, id.col = 1, post.process.fun = NULL, 
+data.frame containing clinical data.}
+\usage{copynumbR.eset(data, clinical, data.col = 2, id.col = 1, post.process.fun = NULL, 
     ...)}
 \arguments{
-  \item{data}{data.frame containing genomic data (expression, copy number, ...)}
-  \item{clinical}{data.frame containing matched clinical data}
-  \item{data.col}{Sample data starts at this column}
-  \item{id.col}{The column of the matching sample ids in the clinical data.frame}
+  \item{data}{A data.frame containing genomic data (expression, copy number, ...).}
+  \item{clinical}{A data.frame containing matched clinical data.}
+  \item{data.col}{Sample data starts at this column.}
+  \item{id.col}{The column of the matching sample ids in the clinical data.frame.}
   \item{post.process.fun}{A function to manipulate the final ExpressionSet (adding a Surv obj for
-example)}
-  \item{\dots}{Additional arguments passed to post.process.fun}
+example).}
+  \item{\dots}{Additional arguments passed to post.process.fun().}
 }
 
 

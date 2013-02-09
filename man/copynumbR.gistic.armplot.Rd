@@ -13,7 +13,7 @@
 }
 }
 
-\value{A ggplot2 object}
+\value{A ggplot2 object.}
 
 \author{Markus Riester}
 

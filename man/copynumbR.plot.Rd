@@ -1,34 +1,33 @@
 \name{copynumbR.plot}
 \alias{copynumbR.plot}
 \title{copynumbR plot}
-\description{Chromosome frequency plot}
+\description{Chromosome frequency plot.}
 \usage{copynumbR.plot(esets, window = 5e+05, labels = paste(names(esets), 
     " (n = ", sapply(esets, ncol), ")", sep = ""), gain = 0.1, 
     loss = -0.1, sma = 10, from.chr = 1, to.chr = 22, ylab = "Loss / Gain", 
     xlab = "Chromosome", centromere.file = "hg18")}
 \arguments{
-  \item{esets}{List of ExpressionSets}
-  \item{window}{Window size in base pairs. Copy numbers will be the median in each window}
+  \item{esets}{List of ExpressionSets with segmented copy number data.}
+  \item{window}{Window size in base pairs. Copy numbers will be the median in each window.}
   \item{labels}{The labels of the ExpressionSets.}
-  \item{gain}{Minimum log2 ratio for a copy number gain}
-  \item{loss}{Maximum log2 ratio for a copy number loss}
-  \item{sma}{Smooth copy numbers with a simple moving average}
-  \item{from.chr}{Start plotting at this chromosome}
-  \item{to.chr}{End plotting at this chromosome}
-  \item{ylab}{The y-axis label}
-  \item{xlab}{The x-axis label}
+  \item{gain}{Minimum log2 ratio for a copy number gain.}
+  \item{loss}{Maximum log2 ratio for a copy number loss.}
+  \item{sma}{Smooth copy numbers with a simple moving average.}
+  \item{from.chr}{Start plotting at this chromosome.}
+  \item{to.chr}{End plotting at this chromosome.}
+  \item{ylab}{The y-axis label.}
+  \item{xlab}{The x-axis label.}
   \item{centromere.file}{File containing the centromere locations for each chromosome.
-These files are already provided for hg17-hg19
-curl -s
-"http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
-gunzip -c | grep acen
-Select these with centromere.file=c("hg17", "hg18","hg19")}
+These files are already provided for hg17-hg19.
+Select these with centromere.file=c("hg17", "hg18","hg19").}
 }
 
-\value{A ggplot2 object}
+\value{A ggplot2 object.}
 
 \author{Markus Riester}
-
+\note{The centromere files were generated with: \code{curl -s
+"http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
+gunzip -c | grep acen}}
 
 
 
