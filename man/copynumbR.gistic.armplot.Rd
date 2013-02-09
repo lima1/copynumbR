@@ -13,7 +13,7 @@
 }
 }
 
-\value{A list containing the ggplot2 and the data as used in ggplot2}
+\value{A ggplot2 object}
 
 \author{Markus Riester}
 
@@ -23,11 +23,11 @@
 \examples{
 library(copynumbR)
 
-res <-
+p <-
     copynumbR.gistic.armplot(file=
         system.file("extdata/gistic_stransky_bladder", 
             "broad_values_by_arm.txt", package="copynumbR")
     )
 
-plot(res$plot)
+plot(p)
 }

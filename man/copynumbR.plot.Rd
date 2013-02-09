@@ -17,11 +17,12 @@
   \item{to.chr}{End plotting at this chromosome}
   \item{ylab}{The y-axis label}
   \item{xlab}{The x-axis label}
-  \item{centromere.file}{File containing the centromere locations for each chromosome
+  \item{centromere.file}{File containing the centromere locations for each chromosome.
 These files are already provided for hg17-hg19
 curl -s
 "http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
-gunzip -c | grep acen}
+gunzip -c | grep acen
+Select these with centromere.file=c("hg17", "hg18","hg19")}
 }
 
 \value{A ggplot2 object}

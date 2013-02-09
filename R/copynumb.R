@@ -222,18 +222,18 @@ ncol=NULL,
             q))+geom_point(alpha=0.2)+facet_wrap(~Chromosome, ncol = ncol)
 
     }
-    list(plot=gp, data=data.stack)
-    ### A list containing the ggplot2 and the data as used in ggplot2
+    gp
+    ### A ggplot2 object
 },ex=function(){
     library(copynumbR)
 
-    res <-
+    p <-
         copynumbR.gistic.armplot(file=
             system.file("extdata/gistic_stransky_bladder", 
                 "broad_values_by_arm.txt", package="copynumbR")
         )
 
-    plot(res$plot)
+    plot(p)
 })
 
 
@@ -508,10 +508,6 @@ min.samples=3,
 ### Minimum number of samples in each cutoff category
 sqrt=FALSE,
 ### Square root transform the data for read counts?
-highlight=NULL,
-### highlight some samples (not yet implemented)
-highlight.labels=NULL,
-### The label of these highlighted samples shown in the legend
 xlab="Copy Number",
 ### The label of the x-axis
 ylab="Expression",
@@ -537,26 +533,25 @@ outlier.shape=NA
         lapply(1:nrow(eset.cn), function(j) try(data.frame(Group=names(res)[i],
         Gene=featureNames(eset.expr)[j]
         ,Expr=exprs(eset.expr)[j,res[[i]][,j]]
+        ,id=sampleNames(eset.expr)[res[[i]][,j]]
         ,stringsAsFactors=FALSE)))),recursive=FALSE)) 
 
      d.f$Expr <- as.numeric(d.f$Expr)
      d.f$Group <- factor(d.f$Group, levels=cutoff.labels[cutoff.labels %in%
         d.f$Group])
-
+    
     p <- ggplot(d.f,
     aes(Group,Expr))+geom_boxplot(outlier.shape = outlier.shape )
     if (sqrt)
-    p <- p + scale_y_sqrt(breaks=trans_breaks("sqrt",function(x) x ^
-    2)(c(1,1:8*500)))
+        p <- p + scale_y_sqrt(breaks=trans_breaks("sqrt",function(x) x ^
+            2)(c(1,1:8*(max(d.f$Expr)/7))))
     p <- p +facet_wrap(~Gene)+theme(axis.text.x=element_text(angle=45,
     hjust=1))+ylab(ylab)+xlab(xlab)
-    if (!is.null(highlight)) {
-        warning("Not yet implemented")    
-    }
     p
 ### A ggplot2 object.    
 },ex=function(){
     library(copynumbR)
+    library(ggplot2)
     clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
 
     eset.genes <- copynumbR.read.segmented(system.file("extdata",
@@ -570,8 +565,12 @@ outlier.shape=NA
     isc <- intersect(sampleNames(eset.genes),
         sampleNames(PMID17099711.GPL91_eset))
 
-    copynumbR.boxplot(eset.genes[,isc], PMID17099711.GPL91_eset[,isc],
+    p <- copynumbR.boxplot(eset.genes[,isc], PMID17099711.GPL91_eset[,isc],
         probeset=c("MYC", "ADCY8"))
+
+    # Highlight samples
+     plot(p+geom_jitter(aes(shape=eset.genes[,id]$GENDER),size=4)+scale_shape_discrete(name="Gender"))
+
 })
 
 
@@ -846,7 +845,7 @@ centromere.file="hg18"
             90, hjust = 1))
         p1 <- p1 +     
             scale_y_continuous(minor_breaks=cumsum(hg18$chrl)/window*s,
-        breaks=round(hg18$centromere[from.chr:to.chr,1]/window*s)
+            breaks=round(hg18$centromere[from.chr:to.chr,1]/window*s)
         ,labels=hg18$chrs, trans=reverse_trans(),
         limits=c(cumsum(hg18$chrl)[to.chr+1]/window*s,from.chr-1))
     } else {

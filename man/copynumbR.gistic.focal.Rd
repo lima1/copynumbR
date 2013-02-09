@@ -23,7 +23,10 @@ presentation in knitR/Sweave.}
 
 \examples{
 library(copynumbR)
-clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+
+clinical <- read.csv(system.file("extdata", 
+    "stransky_bladder_clinical.csv", package="copynumbR"))
+
 eset <-
 copynumbR.gistic.read.lesions(system.file("extdata/gistic_stransky_bladder",
     "all_lesions.conf_95.txt", package="copynumbR"), clinical)

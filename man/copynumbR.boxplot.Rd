@@ -6,8 +6,8 @@ data}
 \usage{copynumbR.boxplot(eset.cn, eset.expr, cutoffs = c(-Inf, -1.3, 
     -0.1, 0.1, 0.9, Inf), cutoff.labels = c("High Loss", "Loss", 
     "Normal", "Gain", "Amplification"), probesets = NULL, min.samples = 3, 
-    sqrt = FALSE, highlight = NULL, highlight.labels = NULL, 
-    xlab = "Copy Number", ylab = "Expression", outlier.shape = NA)}
+    sqrt = FALSE, xlab = "Copy Number", ylab = "Expression", 
+    outlier.shape = NA)}
 \arguments{
   \item{eset.cn}{ExpressionSet with copy number data. The featureNames must correspond to
 the eset.expr provided next. Typically created with
@@ -22,8 +22,6 @@ correspond to the ones of eset.cn. So for Affymetrix data for example,
 obviously only useful for already filtered ExpressionSets.}
   \item{min.samples}{Minimum number of samples in each cutoff category}
   \item{sqrt}{Square root transform the data for read counts?}
-  \item{highlight}{highlight some samples (not yet implemented)}
-  \item{highlight.labels}{The label of these highlighted samples shown in the legend}
   \item{xlab}{The label of the x-axis}
   \item{ylab}{The label of the y-axis}
   \item{outlier.shape}{Display outliers? Passed to geom_boxplot()}
@@ -38,6 +36,7 @@ obviously only useful for already filtered ExpressionSets.}
 
 \examples{
 library(copynumbR)
+library(ggplot2)
 clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
 
 eset.genes <- copynumbR.read.segmented(system.file("extdata",
@@ -51,6 +50,10 @@ data(PMID17099711.GPL91_eset)
 isc <- intersect(sampleNames(eset.genes),
     sampleNames(PMID17099711.GPL91_eset))
 
-copynumbR.boxplot(eset.genes[,isc], PMID17099711.GPL91_eset[,isc],
+p <- copynumbR.boxplot(eset.genes[,isc], PMID17099711.GPL91_eset[,isc],
     probeset=c("MYC", "ADCY8"))
+
+# Highlight samples
+ plot(p+geom_jitter(aes(shape=eset.genes[,id]$GENDER),size=4)+scale_shape_discrete(name="Gender"))
+
 }

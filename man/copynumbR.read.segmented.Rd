@@ -29,7 +29,8 @@ eset <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad",
 plot(exprs(eset))
 
 eset.genes <- copynumbR.read.segmented(system.file("extdata",
- "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE)
+ "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE,
+ geneMap=geneMap_hg17)
 
 boxplot(exprs(eset.genes)["MYC",])
 }
