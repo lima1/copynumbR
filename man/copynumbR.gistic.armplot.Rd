@@ -29,5 +29,5 @@ res <-
             "broad_values_by_arm.txt", package="copynumbR")
     )
 
-plot(res[[1]])
+plot(res$plot)
 }
