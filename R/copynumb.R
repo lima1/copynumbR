@@ -157,9 +157,10 @@ loss=-0.1
         Type= sapply(featureData(eset)[[1]], function(x) strsplit(x, 
         " ")[[1]][1]), "q-value"=featureData(eset)[[6]], 
         "res. q-value"=featureData(eset)[[7]], stringsAsFactors=FALSE)
-        df$n = sapply(1:nrow(eset), function(i) ifelse(df$Type[i] ==
+
+        df$n <- sapply(1:nrow(eset), function(i) ifelse(df$Type[i] ==
         "Amplification", sum(exprs(eset)[i,] > gain ), sum(exprs(eset)[i,] < loss)))
-        df$Freq = paste(df$Freq, " (",round(df$Freq/ncol(eset)*100,digits=1), "%)", sep="")
+        df$Freq <- paste(df$n, " (",round(df$n/ncol(eset)*100,digits=1), "%)", sep="")
         .addGenes(eset, df, gistic.lesions.file.amp, gistic.lesions.file.del)
 
 },ex=function(){
