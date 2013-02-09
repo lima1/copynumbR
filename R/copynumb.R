@@ -152,14 +152,17 @@ loss=-0.1
         Type= sapply(featureData(eset)[[1]], function(x) strsplit(x, 
         " ")[[1]][1]), "q-value"=featureData(eset)[[6]], 
         "res. q-value"=featureData(eset)[[7]], stringsAsFactors=FALSE)
-        df$Freq = sapply(1:nrow(eset), function(i) ifelse(df$Type[i] ==
+        df$n = sapply(1:nrow(eset), function(i) ifelse(df$Type[i] ==
         "Amplification", sum(exprs(eset)[i,] > gain ), sum(exprs(eset)[i,] < loss)))
-        df$Freq.F = paste(df$Freq, " (",round(df$Freq/ncol(eset)*100,digits=1), "%)", sep="")
+        df$Freq = paste(df$Freq, " (",round(df$Freq/ncol(eset)*100,digits=1), "%)", sep="")
         .addGenes(eset, df, gistic.lesions.file.amp, gistic.lesions.file.del)
 
 },ex=function(){
     library(copynumbR)
-    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+
+    clinical <- read.csv(system.file("extdata", 
+        "stransky_bladder_clinical.csv", package="copynumbR"))
+
     eset <-
     copynumbR.gistic.read.lesions(system.file("extdata/gistic_stransky_bladder",
         "all_lesions.conf_95.txt", package="copynumbR"), clinical)
@@ -278,9 +281,9 @@ geneMap=NULL,
 ### Additional arguments passed to the copynumbR.eset function
 ) {
     data.col <- ifelse(gene,6,4)
-    cn = read.delim(filename,as.is=TRUE)
-    colnames(cn) = c("ID","chrom","loc.start","loc.end","num.mark","seg.mean") 
-    seg = CNSeg(cn)
+    cn <- read.delim(filename,as.is=TRUE)
+    colnames(cn) <- c("ID","chrom","loc.start","loc.end","num.mark","seg.mean") 
+    seg <- CNSeg(cn)
     if (gene && is.null(geneMap)) {
         data(geneInfo)
         warning("geneMap not defined. Using hg18 default provided by the CNTools package")
@@ -294,11 +297,14 @@ geneMap=NULL,
             what="mean",geneMap=geneMap)
     }
     if (mad > 0) {
-    f1 = function(x) { sum(x == 0) == 0 }
-    ffun <- filterfun(f1)
-    filteredrs <- genefilter(rsseg, ffun)
-    data <- madFilter(filteredrs, mad)@rs
-    } else { data = rsseg@rs } 
+        f1 <- function(x) { sum(x == 0) == 0 }
+        ffun <- filterfun(f1)
+        filteredrs <- genefilter(rsseg, ffun)
+        data <- madFilter(filteredrs, mad)@rs
+    } else { 
+        data = rsseg@rs 
+    }
+
     for (i in 1:3) data[,i] = as.numeric(as.character(data[,i]))
 
     eset <- copynumbR.eset(data, clinical, data.col, ...)
@@ -318,7 +324,8 @@ geneMap=NULL,
     plot(exprs(eset))
 
     eset.genes <- copynumbR.read.segmented(system.file("extdata",
-     "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE)
+     "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE,
+     geneMap=geneMap_hg17)
 
     boxplot(exprs(eset.genes)["MYC",])
 })
@@ -669,11 +676,12 @@ ylab="Loss / Gain",
 xlab="Chromosome",
 ### The x-axis label
 centromere.file="hg18"
-### File containing the centromere locations for each chromosome
+### File containing the centromere locations for each chromosome.
 ### These files are already provided for hg17-hg19
 ###  curl -s
 ### "http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
 ### gunzip -c | grep acen
+### Select these with centromere.file=c("hg17", "hg18","hg19")
 ) {
     max.chr <- max(sapply(esets, function(X) max(featureData(X)$chrom))) 
     min.chr <- min(sapply(esets, function(X) min(featureData(X)$chrom))) 
@@ -755,11 +763,12 @@ hide.labels=FALSE,
 ylab=("Chromosome"),
 ### The y-axis label
 centromere.file="hg18"
-### File containing the centromere locations for each chromosome
+### File containing the centromere locations for each chromosome.
 ### These files are already provided for hg17-hg19
 ###  curl -s
 ### "http://hgdownload.cse.ucsc.edu/goldenPath/hg18/database/cytoBand.txt.gz" |
 ### gunzip -c | grep acen
+### Select these with centromere.file=c("hg17", "hg18","hg19")
 ) {
     sampleNames(eset) <- make.names(sampleNames(eset))
     eset <- eset[featureData(eset)[[1]]>= from.chr & featureData(eset)[[1]] <=

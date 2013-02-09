@@ -138,7 +138,8 @@ eset.gistic.lesions <-
 # list all recurrent gains and losses
 featureData(eset.gistic.lesions)$Descriptor
 @
-GISTIC further identifies potential driver genes of recurrent focal alterations. We can get these genes with the 
+GISTIC further identifies potential driver genes of recurrent focal
+alterations. We can get these genes with the
 \texttt{copynumbR.gistic.genes.band} function:
 
 <<band>>=
@@ -148,7 +149,7 @@ band <- copynumbR.gistic.genes.band(
 band
 @
 
-We can get a quick overview of all focal amplifcation with the
+We can get a quick overview of all focal amplifcations with the
 \texttt{copynumbR.gistic.focal} function (Table~\ref{tbl:focal}): 
 
 <<focal, results=tex>>=
@@ -165,7 +166,9 @@ caption="Table of focal alterations identified with GISTIC 2.0.",
 label="tbl:focal"),
 include.rownames=FALSE)
 @
-GISTIC is also helpful in idenfying broad events, which span over a specified percentage of a whole chromosome arm. A nice way of visualizing these broad events is with our armplot (Fig.~\ref{fig:armplot}):
+GISTIC is also helpful in idenfying broad events, which span over a specified
+percentage of a whole chromosome arm. A nice way of visualizing these broad
+events is with our armplot (Fig.~\ref{fig:armplot}):
 
 \begin{figure}
 \centering
