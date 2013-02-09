@@ -243,31 +243,26 @@ ncol=NULL,
 })
 
 
-copynumbR.tcga.write.gisticinput <- function
-### Create a GISTIC input files (segmented data and array file) from TCGA Level 3 data.
+copynumbR.tcga.write.segmented <- function
+### Create a segmented copy number file from TCGA Level 3 data
 (path=".", 
 ### The path containing the Level_3 folder.
-output.seg="tcga.seg",
-### The GISTIC segemented data input file.
-output.alf = "tcga.alf", 
-### The GISTIC array input file.
+output="tcga.seg",
+### The segemented data output file.
 hg="hg18", 
 ### The genome version.
 verbose=TRUE
 ### Print some additional progress information.
 ) {
-    files = dir(paste(path,"Level_3/", sep="/"), full.names=TRUE)
-    files = files[grep(paste("\\.",hg,sep=""), files)]
+    files <- dir(paste(path,"Level_3/", sep="/"), full.names=TRUE)
+    files <- files[grep(paste("\\.",hg,sep=""), files)]
     if (verbose) cat("Reading", files,sep="\n") 
-    data = lapply(files, read.delim, stringsAsFactors=FALSE)
+    data <- lapply(files, read.delim, stringsAsFactors=FALSE)
     
     for (i in 1:length(data)) {
         write.table(data[[i]], file=output.seg, append=i!=1, col.names=i==1,
         row.names=FALSE, quote=FALSE, sep="\t") 
     }
-    arrays = read.delim(file=output.seg, header=TRUE)[,1]
-    write.table(data.frame(Array=levels(arrays)), file=output.alf,
-    quote=FALSE, row.names=FALSE)
 }
 
 copynumbR.read.segmented <- structure(function
