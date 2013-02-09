@@ -260,7 +260,7 @@ verbose=TRUE
     data <- lapply(files, read.delim, stringsAsFactors=FALSE)
     
     for (i in 1:length(data)) {
-        write.table(data[[i]], file=output.seg, append=i!=1, col.names=i==1,
+        write.table(data[[i]], file=output, append=i!=1, col.names=i==1,
         row.names=FALSE, quote=FALSE, sep="\t") 
     }
 }
