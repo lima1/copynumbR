@@ -17,7 +17,10 @@ data.col=10,
 ### ExpressionSet containing the significant GISTIC output    
 },ex=function(){
     library(copynumbR)
-    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+
+    clinical <- read.csv(system.file("extdata", 
+        "stransky_bladder_clinical.csv", package="copynumbR"))
+
     eset <-
     copynumbR.gistic.read.lesions(system.file("extdata/gistic_stransky_bladder",
         "all_lesions.conf_95.txt", package="copynumbR"), clinical)
@@ -50,7 +53,8 @@ data.col=4,
 ### GISTIC
 },ex=function(){
     library(copynumbR)
-    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+    clinical <- read.csv(system.file("extdata", 
+        "stransky_bladder_clinical.csv", package="copynumbR"))
     eset <-
     copynumbR.gistic.read.genes(system.file("extdata/gistic_stransky_bladder",
         "all_data_by_genes.txt", package="copynumbR"), clinical)
@@ -87,7 +91,8 @@ data.col=2,
     copynumbR.eset(data, clinical,data.col,...)
 },ex=function(){
     library(copynumbR)
-    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+    clinical <- read.csv(system.file("extdata", 
+        "stransky_bladder_clinical.csv", package="copynumbR"))
     eset <-
     copynumbR.gistic.read.broad(system.file("extdata/gistic_stransky_bladder",
         "broad_values_by_arm.txt", package="copynumbR"), clinical)
@@ -369,7 +374,8 @@ eset.segmented)
 },"ex"=function(){
     library(copynumbR)
 
-    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+    clinical <- read.csv(system.file("extdata", 
+        "stransky_bladder_clinical.csv", package="copynumbR"))
 
     # Read GISTIC peaks
     eset.gistic <-
@@ -377,7 +383,8 @@ eset.segmented)
         "all_lesions.conf_95.txt", package="copynumbR"), clinical)
     
     # Read segmented data, typically from another cohort
-    eset.segmented <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
+    eset.segmented <- copynumbR.read.segmented(system.file("extdata", 
+        "stransky_bladder.glad", package="copynumbR"), clinical)
     
     # We do not have example data of a second cohort, so we just extract the
     # GISTIC peaks from the segmented data
@@ -467,7 +474,8 @@ phenoData=pd)
 # An ExpressionSet object    
 },ex=function(){
     library(copynumbR)
-    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+    clinical <- read.csv(system.file("extdata", 
+        "stransky_bladder_clinical.csv", package="copynumbR"))
 
     data <- read.delim(system.file("extdata/gistic_stransky_bladder",
     "broad_values_by_arm.txt", package="copynumbR"),stringsAsFactors=FALSE)
@@ -483,7 +491,6 @@ phenoData=pd)
     
     eset$GENDER.2
 })
-
 
 copynumbR.boxplot <- structure(function
 ### A boxplot showing correlation of copy number and expression for matched
@@ -552,11 +559,12 @@ outlier.shape=NA
 },ex=function(){
     library(copynumbR)
     library(ggplot2)
-    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+    clinical <- read.csv(system.file("extdata", 
+        "stransky_bladder_clinical.csv", package="copynumbR"))
 
     eset.genes <- copynumbR.read.segmented(system.file("extdata",
-        "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE,
-        geneMap=geneMap_hg17)
+        "stransky_bladder.glad", package="copynumbR"), clinical, 
+        gene=TRUE, geneMap=geneMap_hg17)
     
     # load matched expression data
     data(PMID17099711.GPL91_eset)
@@ -569,7 +577,8 @@ outlier.shape=NA
         probeset=c("MYC", "ADCY8"))
 
     # Highlight samples
-     plot(p+geom_jitter(aes(shape=eset.genes[,id]$GENDER),size=4)+scale_shape_discrete(name="Gender"))
+     plot(p+geom_jitter(aes(shape=eset.genes[,id]$GENDER),size=4)+
+        scale_shape_discrete(name="Gender"))
 
 })
 
@@ -706,8 +715,12 @@ centromere.file="hg18"
 ### A ggplot2 object
 },ex=function(){
     library(copynumbR)
-    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
-    eset <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
+
+    clinical <- read.csv(system.file("extdata", 
+        "stransky_bladder_clinical.csv", package="copynumbR"))
+
+    eset <- copynumbR.read.segmented(system.file("extdata", 
+        "stransky_bladder.glad", package="copynumbR"), clinical)
 
     # find the non-muscle-invasive samples
     idx.noninvasive <- grepl("Ta|T1", eset$T)
@@ -881,12 +894,17 @@ centromere.file="hg18"
         print(p2+tmp, vp=viewport(0.8, 0.2, x=0.42, y=0.92))
         print(p1+xtmp, vp=viewport(0.8, 0.84, x=0.4, y=0.47))
     }
-    list(p1,p2)
-### List of two ggplot2 objects (dendrogram and heatmap)    
+    list(heatmap=p1,dendrogram=p2)
+### List of two ggplot2 objects (heatmap and dendrogram)
 },ex=function(){
     library(copynumbR)
-    clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
-    eset <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
+
+    clinical <- read.csv(system.file("extdata", 
+        "stransky_bladder_clinical.csv", package="copynumbR"))
+
+    eset <- copynumbR.read.segmented(system.file("extdata", 
+        "stransky_bladder.glad", package="copynumbR"), clinical)
+
     p <- copynumbR.heatmap(eset, centromere.file="hg17")
 })
 

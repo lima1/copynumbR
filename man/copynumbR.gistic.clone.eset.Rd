@@ -20,7 +20,8 @@ in eset.gistic}
 \examples{
 library(copynumbR)
 
-clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+clinical <- read.csv(system.file("extdata", 
+    "stransky_bladder_clinical.csv", package="copynumbR"))
 
 # Read GISTIC peaks
 eset.gistic <-
@@ -28,7 +29,8 @@ copynumbR.gistic.read.lesions(system.file("extdata/gistic_stransky_bladder",
     "all_lesions.conf_95.txt", package="copynumbR"), clinical)
 
 # Read segmented data, typically from another cohort
-eset.segmented <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
+eset.segmented <- copynumbR.read.segmented(system.file("extdata", 
+    "stransky_bladder.glad", package="copynumbR"), clinical)
 
 # We do not have example data of a second cohort, so we just extract the
 # GISTIC peaks from the segmented data

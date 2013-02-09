@@ -24,7 +24,8 @@ example)}
 
 \examples{
 library(copynumbR)
-clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+clinical <- read.csv(system.file("extdata", 
+    "stransky_bladder_clinical.csv", package="copynumbR"))
 
 data <- read.delim(system.file("extdata/gistic_stransky_bladder",
 "broad_values_by_arm.txt", package="copynumbR"),stringsAsFactors=FALSE)

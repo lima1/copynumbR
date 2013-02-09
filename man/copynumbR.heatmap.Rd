@@ -35,7 +35,7 @@ gunzip -c | grep acen
 Select these with centromere.file=c("hg17", "hg18","hg19")}
 }
 
-\value{List of two ggplot2 objects (dendrogram and heatmap)    }
+\value{List of two ggplot2 objects (heatmap and dendrogram)}
 
 \author{Markus Riester}
 
@@ -44,7 +44,12 @@ Select these with centromere.file=c("hg17", "hg18","hg19")}
 
 \examples{
 library(copynumbR)
-clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
-eset <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
+
+clinical <- read.csv(system.file("extdata", 
+    "stransky_bladder_clinical.csv", package="copynumbR"))
+
+eset <- copynumbR.read.segmented(system.file("extdata", 
+    "stransky_bladder.glad", package="copynumbR"), clinical)
+
 p <- copynumbR.heatmap(eset, centromere.file="hg17")
 }

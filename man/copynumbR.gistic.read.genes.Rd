@@ -23,7 +23,8 @@ GISTIC}
 
 \examples{
 library(copynumbR)
-clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+clinical <- read.csv(system.file("extdata", 
+    "stransky_bladder_clinical.csv", package="copynumbR"))
 eset <-
 copynumbR.gistic.read.genes(system.file("extdata/gistic_stransky_bladder",
     "all_data_by_genes.txt", package="copynumbR"), clinical)

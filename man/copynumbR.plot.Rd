@@ -34,8 +34,12 @@ Select these with centromere.file=c("hg17", "hg18","hg19")}
 
 \examples{
 library(copynumbR)
-clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
-eset <- copynumbR.read.segmented(system.file("extdata", "stransky_bladder.glad", package="copynumbR"), clinical)
+
+clinical <- read.csv(system.file("extdata", 
+    "stransky_bladder_clinical.csv", package="copynumbR"))
+
+eset <- copynumbR.read.segmented(system.file("extdata", 
+    "stransky_bladder.glad", package="copynumbR"), clinical)
 
 # find the non-muscle-invasive samples
 idx.noninvasive <- grepl("Ta|T1", eset$T)

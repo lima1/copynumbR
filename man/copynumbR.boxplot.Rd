@@ -37,11 +37,12 @@ obviously only useful for already filtered ExpressionSets.}
 \examples{
 library(copynumbR)
 library(ggplot2)
-clinical <- read.csv(system.file("extdata", "stransky_bladder_clinical.csv", package="copynumbR"))
+clinical <- read.csv(system.file("extdata", 
+    "stransky_bladder_clinical.csv", package="copynumbR"))
 
 eset.genes <- copynumbR.read.segmented(system.file("extdata",
-    "stransky_bladder.glad", package="copynumbR"), clinical, gene=TRUE,
-    geneMap=geneMap_hg17)
+    "stransky_bladder.glad", package="copynumbR"), clinical, 
+    gene=TRUE, geneMap=geneMap_hg17)
 
 # load matched expression data
 data(PMID17099711.GPL91_eset)
@@ -54,6 +55,7 @@ p <- copynumbR.boxplot(eset.genes[,isc], PMID17099711.GPL91_eset[,isc],
     probeset=c("MYC", "ADCY8"))
 
 # Highlight samples
- plot(p+geom_jitter(aes(shape=eset.genes[,id]$GENDER),size=4)+scale_shape_discrete(name="Gender"))
+ plot(p+geom_jitter(aes(shape=eset.genes[,id]$GENDER),size=4)+
+    scale_shape_discrete(name="Gender"))
 
 }
