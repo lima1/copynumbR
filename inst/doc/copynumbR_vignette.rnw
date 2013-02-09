@@ -15,9 +15,7 @@
 \usepackage{epsfig}
 \usepackage{fleqn}
 \usepackage{color}
-\usepackage[colorlinks=true, linkcolor=blue, anchorcolor=blue,
-                                                                                        citecolor=blue, filecolor=blue, menucolor=blue, pagecolor=blue,
-                                                                                        urlcolor=blue]{hyperref}
+\usepackage[colorlinks=true, linkcolor=blue, anchorcolor=blue,citecolor=blue, filecolor=blue, menucolor=blue, pagecolor=blue, urlcolor=blue]{hyperref}
 \usepackage{mathrsfs}
 \usepackage{eufrak}
 \usepackage{graphicx}
@@ -63,7 +61,7 @@ for identifying recurrent copy number gains and losses.
 
 \section{Tutorial}
 
-\subsection{Visualization of the complete data}
+\subsection{Visualization}
 Modern SNP array data from manufacturers such as Affymetrix provide
 high-resolution copy number information along the genome. To speed-up
 calculation times and lower disk space requirements of this tutorial, we use an
@@ -122,6 +120,7 @@ p <- copynumbR.heatmap(eset, centromere.file="hg17")
 \label{fig:heatmap}
 \end{figure}
 
+\clearpage
 \subsection{GISTIC}
 
 The GISTIC 2.0 software \citep{Mermel:2011} has been established as
@@ -186,16 +185,15 @@ and q-arms.}
 \label{fig:armplot}
 \end{figure}
 
-\section{Matched Expression Data}
+\clearpage
+\subsection{Matched Expression Data}
 
 This package provides a visualization for the correlation of copy number and
 expression for a limited number of genes.  We use boxplots and stratify samples
 by copy number homozygous loss, loss, gain and amplification
 (Fig.~\ref{fig:boxplot}):
 
-\begin{figure}
-\centering
-<<boxplot, fig=TRUE>>=
+<<boxplotprepare>>=
 library(ggplot2)
 
 # get the segmented data annotated by known UCSC genes
@@ -209,7 +207,11 @@ data(PMID17099711.GPL91_eset)
 # get the samples with matching expression data
 isc <- intersect(sampleNames(eset.genes),
     sampleNames(PMID17099711.GPL91_eset))
+@
 
+\begin{figure}
+\centering
+<<boxplot, fig=TRUE>>=
 # our boxplot function returns a ggplot2 object, so we
 # can use ggplots power to customize the boxplot
 copynumbR.boxplot(eset.genes[,isc], PMID17099711.GPL91_eset[,isc],
