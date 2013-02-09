@@ -197,7 +197,7 @@ ncol=NULL,
     data <- read.delim(file,stringsAsFactors=FALSE)
     cols <- match(paste(rep(chromosomes,2), c(rep("p",length(chromosomes)),
     rep("q", length(chromosomes))), sep=""),data[,1])
-    data <- data[cols,]
+    data <- data[cols,-ncol(data)]
     data.stack <- stack(data,select=-Chromosome.Arm)
     data$Chromosome <- gsub("p|q","", data[,1])
     data$Arm        <- gsub("^\\d+","",data[,1])
@@ -497,14 +497,14 @@ copynumbR.boxplot <- structure(function
 ### A boxplot showing correlation of copy number and expression for matched
 ### data
 (eset.cn, 
-### ExpressionSet with copy number data. The featureNames must correspond to
-### the eset.expr provided next. Typically created with
+### ExpressionSet with copy number data. The featureNames and sampleNames
+### must correspond to the eset.expr provided next. Typically created with
 ### copynumbR.read.segmented(...,gene=TRUE) or
 ### copynumbR.gistic.read.genes(...) 
 eset.expr,
 ### ExpressionSet with expression data. See above, the featureNames must
 ### correspond to the ones of eset.cn. So for Affymetrix data for example,
-#### probe sets need to be collapsed (for example with the WGCNA package). 
+### probe sets need to be collapsed (for example with the WGCNA package). 
 cutoffs=c(-Inf,-1.3,-0.1,0.1,0.9,Inf),
 ### Copy number cutoffs 
 cutoff.labels=c("High Loss","Loss","Normal","Gain","Amplification"),

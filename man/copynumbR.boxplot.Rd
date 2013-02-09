@@ -9,13 +9,13 @@ data}
     sqrt = FALSE, xlab = "Copy Number", ylab = "Expression", 
     outlier.shape = NA)}
 \arguments{
-  \item{eset.cn}{ExpressionSet with copy number data. The featureNames must correspond to
-the eset.expr provided next. Typically created with
+  \item{eset.cn}{ExpressionSet with copy number data. The featureNames and sampleNames
+must correspond to the eset.expr provided next. Typically created with
 copynumbR.read.segmented(...,gene=TRUE) or
 copynumbR.gistic.read.genes(...) }
   \item{eset.expr}{ExpressionSet with expression data. See above, the featureNames must
 correspond to the ones of eset.cn. So for Affymetrix data for example,
-# probe sets need to be collapsed (for example with the WGCNA package). }
+probe sets need to be collapsed (for example with the WGCNA package). }
   \item{cutoffs}{Copy number cutoffs }
   \item{cutoff.labels}{The labels of these cutoffs}
   \item{probesets}{Display only these genes. If null, show all genes. That default is 
