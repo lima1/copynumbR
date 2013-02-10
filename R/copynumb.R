@@ -734,7 +734,7 @@ centromere.file="hg18"
         ,labels=res$hg$chrs[from.chr:to.chr],limits=c(from.chr-1,cumsum(res$hg$chrl)[to.chr+1]/window))+
         ylab(ylab)+xlab(xlab)+facet_grid(label ~ .)
     q <- q +  scale_y_continuous(minor_breaks = NULL,
-        labels = percent_format())+
+        labels = .percent_format())+
         theme(panel.grid.minor =
         element_line(size = 0.4, colour =
             'white'),panel.grid.major=element_line(linetype="blank"))
@@ -988,5 +988,19 @@ base_family = ""
     x <- x[x$transcript_start > start & x$transcript_end < end &
     x$hgnc_symbol != "",]
     x[!duplicated(x$hgnc_symbol),] 
+}
+
+# taken from the scales package
+.percent_format <- function() {
+    precision <- function(x) {
+        rng <- range(x, na.rm = TRUE)
+        
+        span <- if (zero_range(rng)) rng[1] else diff(rng)
+        10 ^ floor(log10(span))
+    }
+    function(x) {
+        x <- abs(round_any(x, precision(x) / 100))
+        str_c(comma(x * 100), "%")    
+    }
 }
 
