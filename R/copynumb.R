@@ -13,7 +13,10 @@ data.col=10,
 ) {
     data <- read.delim(filename, stringsAsFactors=FALSE)
     data <- data[grep("^Actual Copy", data[,9]),]
-    copynumbR.eset(data, clinical,data.col,...)
+    eset <- copynumbR.eset(data, clinical,data.col,...)
+    # parse the wide peak region and make it accessible in the 
+    # featureData slot
+    .addGISTICregion(eset)
 ### ExpressionSet containing the significant GISTIC focal peaks.
 },ex=function(){
     library(copynumbR)
@@ -151,12 +154,15 @@ gain=0.1,
 loss=-0.1
 ### Maximum log2 ratio for a copy number loss.
 ) {
-        eset <- .addGISTICregion(eset)
-        df <- data.frame(Chr = featureData(eset)[[2]], Start =
-        featureData(eset)$start, End = featureData(eset)$end,
-        Type= sapply(featureData(eset)[[1]], function(x) strsplit(x, 
-        " ")[[1]][1]), "q-value"=featureData(eset)[[6]], 
-        "res. q-value"=featureData(eset)[[7]], stringsAsFactors=FALSE)
+        df <- data.frame(
+            Chr = featureData(eset)$Descriptor, 
+            Start = featureData(eset)$start, 
+            End = featureData(eset)$end,
+            Type= sapply(featureData(eset)[[1]], function(x) strsplit(x, 
+                " ")[[1]][1]), 
+            "q-value"=featureData(eset)[[6]], 
+            "res. q-value"=featureData(eset)[[7]], stringsAsFactors=FALSE
+        )
 
         df$n <- sapply(1:nrow(eset), function(i) ifelse(df$Type[i] ==
         "Amplification", sum(exprs(eset)[i,] > gain ), sum(exprs(eset)[i,] < loss)))
@@ -344,11 +350,18 @@ genes.as.features=TRUE,
 })
 
 .addGISTICregion <- function(eset) {
-    featureData(eset)$chr = gsub(":.*$","",featureData(eset)[[3]])
-    featureData(eset)$start =
-    as.numeric(gsub("chr\\d+:|-.*$","",featureData(eset)[[3]]))
-    featureData(eset)$end =
-    as.numeric(gsub("^.*-|\\(.*$","",featureData(eset)[[3]]))
+  
+    peak <- featureData(eset)$Wide.Peak.Limits
+    if (is.null(peak)) {
+        warning("Could not find Wide.Peak.Limits slot.")
+        return(eset)
+    }
+
+    featureData(eset)$chr <- gsub(":.*$","", peak)
+    featureData(eset)$start <-
+        as.numeric(gsub("chr\\d+:|-.*$","",peak))
+    featureData(eset)$end <-
+        as.numeric(gsub("^.*-|\\(.*$","",peak))
     eset
 }
 
@@ -371,7 +384,6 @@ eset.segmented
 ### read with copynumbR.read.segmented. This is useful to compare copy numbers at
 ### GISTIC peaks across cohorts.
 ){
-    eset.gistic <- .addGISTICregion(eset.gistic)
     
     M <- t(mapply(rbind, lapply(1:nrow(eset.gistic), .fetchGISTICcopynumber,
         eset.gistic, eset.segmented)))

@@ -15,6 +15,7 @@ LazyData: \tab true\cr
 Imports: \tab 
 CNTools,
 Biobase,
+stringr,
 ggplot2(>= 0.9.2),
 TTR,
 bioDist,
