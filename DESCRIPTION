@@ -31,3 +31,4 @@ Suggests:
     xtable
 License: GPL-3
 URL: https://github.com/lima1/copynumbR
+biocViews: CopyNumberVariants, Software, Visualization, SNP

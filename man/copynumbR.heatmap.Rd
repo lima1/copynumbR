@@ -4,7 +4,7 @@
 \description{Plot a chromosome heatmap.}
 \usage{copynumbR.heatmap(eset, window = 1e+06, gain = 0.1, loss = -0.1, 
     Colv = NULL, distfun = spearman.dist, hclustfun = hclust, 
-    from.chr = 1, to.chr = 22, start = NULL, end = NULL, ensembl = NULL, 
+    from.chr = 1, to.chr = 22, start = NULL, end = NULL, mart = NULL, 
     plot = TRUE, hide.labels = FALSE, ylab = ("Chromosome"), 
     centromere.file = "hg18")}
 \arguments{
@@ -19,12 +19,10 @@ If NA, no ordering of columns is done.}
   \item{hclustfun}{The cluster function if Colv is NULL.}
   \item{from.chr}{Start plotting at this chromosome.}
   \item{to.chr}{End plotting at this chromosome.}
-  \item{start}{
-}
-  \item{end}{
-}
-  \item{ensembl}{
-}
+  \item{start}{Zoom in, start from the specified coordinates (bp) of from.chr}
+  \item{end}{Zoom in, stop at the specified coordinates (bp) of to.chr. Only
+useful when from.chr and to.chr are equal}
+  \item{mart}{A biomaRt object, used for a zoom in to annotate genes.}
   \item{plot}{Plot the heatmap, otherwise the dendrogram and heatmap are returned as
 list of ggplot2 objects.}
   \item{hide.labels}{Hide the sample labels on the bottom.}

@@ -35,7 +35,8 @@ TTR\cr
 Suggests: \tab 
 xtable\cr
 License: \tab GPL-3\cr
-URL: \tab https://github.com/lima1/copynumbR\cr}
+URL: \tab https://github.com/lima1/copynumbR\cr
+biocViews: \tab CopyNumberVariants, Software, Visualization, SNP\cr}
 }
 \author{Markus Riester}
 
