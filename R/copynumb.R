@@ -805,8 +805,12 @@ from.chr=1,
 to.chr=22,
 ### End plotting at this chromosome.
 start=NULL, 
+### Zoom in, start from the specified coordinates (bp) of from.chr
 end=NULL,
-ensembl=NULL, 
+### Zoom in, stop at the specified coordinates (bp) of to.chr. Only
+### useful when from.chr and to.chr are equal
+mart=NULL, 
+### A biomaRt object, used for a zoom in to annotate genes.
 plot=TRUE, 
 ### Plot the heatmap, otherwise the dendrogram and heatmap are returned as
 ### list of ggplot2 objects.
@@ -874,7 +878,7 @@ centromere.file="hg18"
 
     if (from.chr == to.chr) {
         tmp <- cumsum(hg18$chrl[1:from.chr])
-        genes <- .getGenesRegion(from.chr, start, end, ensembl)
+        genes <- .getGenesRegion(from.chr, start, end, mart)
         genes$transcript_start <-  genes$transcript_start + tmp
         genes$transcript_end <-  genes$transcript_end + tmp
         range.g <- abs(  max(genes$transcript_end) -
@@ -991,12 +995,12 @@ base_family = ""
 })
 
 
-.getGenesRegion <- function(chromosome, start, end, ensembl=NULL) {
-    if (is.null(ensembl)) {
-       ensembl <- useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
+.getGenesRegion <- function(chromosome, start, end, mart=NULL) {
+    if (is.null(mart)) {
+       mart <- useMart(biomart="ensembl", dataset="hsapiens_gene_ensembl")
     }
     x <-getBM(c("hgnc_symbol", "chromosome_name", "transcript_start",
-        "transcript_end"), values=chromosome, filters="chromosome_name", ensembl)
+        "transcript_end"), values=chromosome, filters="chromosome_name", mart)
     x <- x[x$transcript_start > start & x$transcript_end < end &
     x$hgnc_symbol != "",]
     x[!duplicated(x$hgnc_symbol),] 
