@@ -547,8 +547,11 @@ xlab="Copy Number",
 ### The label of the x-axis.
 ylab="Expression",
 ### The label of the y-axis.
-outlier.shape=NA
+outlier.shape=NA,
 ### Display outliers? Passed to geom_boxplot().
+plot=TRUE
+### Generate a ggplot2 object? If FALSE, then just return a list of means for
+### each group and gene.
 ) {
     
     if (ncol(eset.cn) != ncol(eset.expr)) 
@@ -560,6 +563,11 @@ outlier.shape=NA
         warning("sampleNames() of eset.cn and eset.expr do not match.")
 
     if (!is.null(probesets)) {
+        probesets.avail <- probesets[probesets %in%
+            intersect(featureNames(eset.expr), featureNames(eset.cn))]
+        if (length(probesets) != length(probesets.avail)) 
+            warning("Not all probesets available.")
+        probesets <- probesets.avail    
         eset.cn <- eset.cn[probesets,]
         eset.expr <- eset.expr[probesets,]
     }
@@ -582,18 +590,26 @@ outlier.shape=NA
         ,stringsAsFactors=FALSE)))),recursive=FALSE)) 
 
      d.f$Expr <- as.numeric(d.f$Expr)
+     d.f <- d.f[!is.na(d.f$Expr),]
      d.f$Group <- factor(d.f$Group, levels=cutoff.labels[cutoff.labels %in%
         d.f$Group])
-    
-    p <- ggplot(d.f,
-    aes(Group,Expr))+geom_boxplot(outlier.shape = outlier.shape )
-    if (sqrt)
-        p <- p + scale_y_sqrt(breaks=trans_breaks("sqrt",function(x) x ^
-            2)(c(1,1:8*(max(d.f$Expr)/7))))
-    p <- p +facet_wrap(~Gene)+theme(axis.text.x=element_text(angle=45,
-    hjust=1))+ylab(ylab)+xlab(xlab)
-    p
-### A ggplot2 object.    
+
+    if (plot) {
+        p <- ggplot(d.f,
+        aes(Group,Expr))+geom_boxplot(outlier.shape = outlier.shape )
+        if (sqrt)
+            p <- p + scale_y_sqrt(breaks=trans_breaks("sqrt",function(x) x ^
+                2)(c(1,1:8*(max(d.f$Expr)/7))))
+        p <- p +facet_wrap(~Gene)+theme(axis.text.x=element_text(angle=45,
+        hjust=1))+ylab(ylab)+xlab(xlab)
+    } else { 
+        p=NULL 
+    }
+    list(plot=p, means= ddply(d.f, c("Group", "Gene"), .fun= function(x)
+        mean(x$Expr)))
+
+### A list of a ggplot2 object (plot) and the mean values in each group for each gene
+### as data.frame (means)
 },ex=function(){
     library(copynumbR)
     library(ggplot2)
@@ -615,9 +631,8 @@ outlier.shape=NA
         probeset=c("MYC", "ADCY8"))
 
     # Highlight samples
-     plot(p+geom_jitter(aes(shape=eset.genes[,id]$GENDER),size=4)+
+     plot(p$plot+geom_jitter(aes(shape=eset.genes[,id]$GENDER),size=4)+
         scale_shape_discrete(name="Gender"))
-
 })
 
 
@@ -721,6 +736,8 @@ ylab="Loss / Gain",
 ### The y-axis label.
 xlab="Chromosome",
 ### The x-axis label.
+font.size=12,
+### The font size.
 centromere.file="hg18"
 ### File containing the centromere locations for each chromosome.
 ### These files are already provided for hg17-hg19.
@@ -747,7 +764,7 @@ centromere.file="hg18"
         ylab(ylab)+xlab(xlab)+facet_grid(label ~ .)
     q <- q +  scale_y_continuous(minor_breaks = NULL,
         labels = .percent_format())+
-        theme(panel.grid.minor =
+        theme(text = element_text(size=font.size), panel.grid.minor =
         element_line(size = 0.4, colour =
             'white'),panel.grid.major=element_line(linetype="blank"))
 ### A ggplot2 object.

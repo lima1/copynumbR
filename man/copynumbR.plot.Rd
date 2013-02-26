@@ -5,7 +5,7 @@
 \usage{copynumbR.plot(esets, window = 5e+05, labels = paste(names(esets), 
     " (n = ", sapply(esets, ncol), ")", sep = ""), gain = 0.1, 
     loss = -0.1, sma = 10, from.chr = 1, to.chr = 22, ylab = "Loss / Gain", 
-    xlab = "Chromosome", centromere.file = "hg18")}
+    xlab = "Chromosome", font.size = 12, centromere.file = "hg18")}
 \arguments{
   \item{esets}{List of ExpressionSets with segmented copy number data.}
   \item{window}{Window size in base pairs. Copy numbers will be the median in each window.}
@@ -17,6 +17,7 @@
   \item{to.chr}{End plotting at this chromosome.}
   \item{ylab}{The y-axis label.}
   \item{xlab}{The x-axis label.}
+  \item{font.size}{The font size.}
   \item{centromere.file}{File containing the centromere locations for each chromosome.
 These files are already provided for hg17-hg19.
 Select these with centromere.file=c("hg17", "hg18","hg19").}
