@@ -580,11 +580,12 @@ plot=TRUE
         apply(exprs(eset.cn),1, function(x) x>cutoffs[i-1]
         & x <=cutoffs[i]))
     names(res) <- cutoff.labels    
+    res <- lapply(res, function(x) x[apply(x, 2, sum)>0,])
     res <- res[lapply(res, function(x) sum(as.vector(x))) > min.samples]
 
     d.f <- do.call(rbind,unlist(lapply(1:length(res), function(i)
-        lapply(1:nrow(eset.cn), function(j) try(data.frame(Group=names(res)[i],
-        Gene=featureNames(eset.expr)[j]
+        lapply(colnames(res[[i]]), function(j) try(data.frame(Group=names(res)[i],
+        Gene=j
         ,Expr=exprs(eset.expr)[j,res[[i]][,j]]
         ,id=sampleNames(eset.expr)[res[[i]][,j]]
         ,stringsAsFactors=FALSE)))),recursive=FALSE)) 
@@ -981,7 +982,7 @@ base_family = ""
     theme_grey(base_size = base_size, base_family = base_family) %+replace% 
         theme(axis.text = element_text(size = rel(0.8)), 
               axis.ticks = element_line(colour = "black"), 
-              legend.key = element_rect(colour = "grey80"), 
+              legend.key = element_blank(),
               panel.background = element_rect(fill = "white", colour = NA), 
               panel.border = element_rect(fill = NA, colour = "black", size=1.0), 
               panel.grid.major = element_line(linetype="blank", size = 0.2), 
