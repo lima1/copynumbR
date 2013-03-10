@@ -218,7 +218,7 @@ isc <- intersect(sampleNames(eset.genes),
 # our boxplot function returns a ggplot2 object, so we
 # can use ggplots power to customize the boxplot
 copynumbR.boxplot(eset.genes[,isc], PMID17099711.GPL91_eset[,isc],
-    probeset=c("MYC", "ADCY8"))+geom_jitter()
+    probeset=c("MYC", "ADCY8"))$plot+geom_jitter()
 @
 \caption{Correlation of copy number and expression.}
 \label{fig:boxplot}

@@ -1,5 +1,6 @@
 \name{copynumbR-package}
 \alias{copynumbR-package}
+\alias{copynumbR}
 \docType{package}
 \title{Useful helper functions for working with copy number data}
 \description{Copy number helper functions, mainly for visualizing and working with TCGA}
@@ -26,6 +27,7 @@ grid,
 xts(>= 0.9),
 ggdendro,
 biomaRt,
+DNAcopy,
 Ringo\cr
 Depends: \tab 
 R (>= 2.11.0),

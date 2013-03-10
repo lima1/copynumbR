@@ -21,6 +21,7 @@ Imports:
     xts(>= 0.9), 
     ggdendro,
     biomaRt,
+    DNAcopy,
     Ringo
 Depends: 
     R (>= 2.11.0), 

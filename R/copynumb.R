@@ -1038,3 +1038,13 @@ base_family = ""
     }
 }
 
+setMethod("coerce", 
+### Coerce ExpressionSet from the copynumbR package into a CNA object as
+### defined in the DNAcopy package
+signature(from="ExpressionSet", ##<< From ExpressionSet
+          to="CNA" ##<< To CNA
+), function(from, to) { 
+    CNA(exprs(from), featureData(from)$chr,
+    featureData(from)$start)
+})
+
