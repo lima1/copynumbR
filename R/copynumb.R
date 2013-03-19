@@ -970,6 +970,151 @@ centromere.file="hg18"
     p <- copynumbR.heatmap(eset, centromere.file="hg17")
 })
 
+copynumbR.read.maf <- function
+### Parse a MAF file.
+(filename,
+### The filename of the MAF file
+clinical,
+### A data frame with clinical annotation for the phenoData slot of the output
+### ExpressionSet.
+coding.fun = function(x) ifelse(x=="Silent",1,2),
+### This function return an ExpressionSet with the mutation types coded
+### numerically. This function can be used to code mutations. 0 means no
+### mutation.
+...
+### Additional parameters passed to copynumbR.eset
+)
+{
+    sm <- read.delim(filename)
+    sm$.coding <- coding.fun(sm$Variant_Classification)
+
+    d.f <- do.call(rbind, lapply(levels(sm$Hugo_Symbol), function(x)
+        ddply(sm[sm$Hugo_Symbol==x,], "Tumor_Sample_Barcode", function(y)
+        y[which.max(y$.coding),c("Hugo_Symbol","Tumor_Sample_Barcode",".coding")])))
+
+    mdf <- cast(Hugo_Symbol~Tumor_Sample_Barcode,data=d.f,value=".coding")
+
+    mdf[is.na(mdf)] <- 0
+    eset <- copynumbR.eset(mdf, clinical, ...)
+    featureNames(eset) <- mdf[,1]
+    eset
+}
+
+copynumbR.mutation.heatmap <- function
+###
+(eset.cn, 
+### ExpressionSet with copy number data, typically gene-level data parsed with
+### copynumbR.read.segmented( ... , gene=TRUE)
+eset.maf, 
+### ExpressionSet with mutation data, read with copynumbR.read.maf()
+cutoffs=c(-Inf,-1.3,-0.1,0.1,0.9,Inf),
+### Copy number cutoffs.
+cutoff.labels=c("Homozyg. Deletion","Heterozyg. Deletion","Normal","Gain","Amplification"),
+### The labels of these cutoffs.
+mutation.labels=c("Silent","Non-Silent"),
+### The labels of the mutations 
+probesets
+### Plot these probesets (genes) only
+) {
+    if (!is.null(probesets)) {
+        probesets.avail <- probesets[probesets %in%
+            intersect(featureNames(eset.maf), featureNames(eset.cn))]
+        if (length(probesets) != length(probesets.avail)) 
+            warning("Not all probesets available.")
+        probesets <- probesets.avail    
+        eset.cn <- eset.cn[probesets,]
+        eset.maf <- eset.maf[probesets,]
+    }
+
+    if (all(featureNames(eset.cn) == featureNames(eset.maf))!=TRUE) {
+        stop("featureNames() of eset.cn and eset.maf do not match")
+    }
+    
+    res <- lapply(2:length(cutoffs), function(i)
+        apply(exprs(eset.cn),1, function(x) x>cutoffs[i-1]
+        & x <=cutoffs[i]))
+    names(res) <- cutoff.labels
+    res2 <- lapply(1:length(mutation.labels), function(i) apply(exprs(eset.maf),1,
+    function(x) x==i))
+    names(res2) <- mutation.labels
+    res <- c(res2, res)
+
+    res <- lapply(res, function(x) x[apply(x, 1, sum)>0,])
+    res <- res[lapply(res, length)>3]
+
+    d.f <- do.call(rbind,lapply(1:length(res),function(i)
+        data.frame(melt(res[[i]]), type=names(res)[i])))
+
+    d.f$X2 <- factor(d.f$X2, levels=probesets)    
+
+    d.f$alpha= ifelse(d.f$value,1,0)
+    d.f[d.f$type=="Normal","alpha"] <- 0
+    d.f <- d.f[order(d.f$type),]
+    d.f <- d.f[!duplicated(paste(d.f[,1], d.f[,2], d.f[,"alpha"])),]
+    .order <- sapply(levels(d.f[,1]), function(x)
+        sum( (length(levels(d.f$type))-as.numeric(d.f[d.f[,1]==x,"type"]))*
+             10^(as.numeric(d.f[d.f[,1]==x,"value"]))*
+             100^(length(probesets)-as.numeric(d.f[d.f[,1]==x,"X2"]))  ))
+    d.f$.order <- .order[d.f[,1]]
+
+    d.f <- d.f[order(d.f$.order,decreasing=TRUE),]
+    d.f$X1 <- factor(d.f$X1, levels=unique(d.f$X1))
+
+    p <- ggplot(d.f, aes(X1,
+    X2,alpha=alpha,fill=type))+geom_tile()+ylab("")+theme_grey(16)+theme(axis.text.x=element_blank(),
+    axis.ticks.x=element_blank())+xlab("")+scale_alpha_continuous(guide=FALSE)+scale_fill_discrete(name = "Mutation Type")
+
+### A ggplot2 object.    
+}
+
+copynumbR.absolute.run <- function
+(filename,
+sigma.p = 0,
+max.sigma.h = 0.02,
+min.ploidy = 0.95,
+max.ploidy = 10,
+max.as.seg.count = 1500,
+max.non.clonal = 0,
+max.neg.genome = 0,
+copy_num_type="total",
+results.dir=tempdir(),
+verbose=FALSE,
+trans.fun=function(x) x,
+...
+) 
+{
+    x <- read.delim(filename)
+    x <- lapply(levels(x[,1]), function(s) x[x[,1]==s,])
+    
+    
+    .runAbsolute <- function(s, ...) {
+        fn <- tempfile(pattern="copynumbR")
+        sample.name=s[1,1]
+        s <- s[,-1]
+        colnames(s)[1:5] <- c("Chromosome", "Start", "End", "Num_Probes",
+        "Segment_Mean")
+        
+        s[,5] <- trans.fun(s[,5])
+        s <- s[s[,1] < 23,]
+
+        if (verbose) cat("Writing ABSOLUTE input segmented file in", fn, 
+        "\n and output files in", results.dir, "\n")
+
+        write.table(s, file=fn, row.names=FALSE, quote=FALSE, sep="\t")
+        RunAbsolute(fn, sigma.p=sigma.p, max.sigma.h=max.sigma.h,
+        min.ploidy=min.ploidy, max.ploidy=max.ploidy,
+        sample.name=sample.name, max.as.seg.count=max.as.seg.count,
+        copy_num_type=copy_num_type, results.dir=results.dir,
+        max.non.clonal=max.non.clonal, max.neg.genome=max.neg.genome,
+        verbose=verbose, ...)
+        load(paste(results.dir, "/", sample.name, ".ABSOLUTE.RData", sep=""))
+        seg.dat
+    }
+
+    lapply(x, .runAbsolute, ...)
+
+}
+
 
 theme_classic2 <- structure(function
 ### A simple ggplot2 theme, no fancy stuff.
@@ -1045,6 +1190,6 @@ signature(from="ExpressionSet", ##<< From ExpressionSet
           to="CNA" ##<< To CNA
 ), function(from, to) { 
     CNA(exprs(from), featureData(from)$chr,
-    featureData(from)$start)
+    featureData(from)$start, sampleid=sampleNames(from))
 })
 

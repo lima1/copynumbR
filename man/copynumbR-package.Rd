@@ -8,7 +8,7 @@
 \tabular{ll}{Package: \tab copynumbR\cr
 Type: \tab Package\cr
 Title: \tab Useful helper functions for working with copy number data\cr
-Version: \tab 0.1\cr
+Version: \tab 0.99.0\cr
 Date: \tab 2012-03-02\cr
 Author: \tab Markus Riester\cr
 Maintainer: \tab Markus Riester <markus@jimmy.harvard.edu>\cr
