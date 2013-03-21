@@ -534,7 +534,7 @@ eset.expr,
 ### probe sets need to be collapsed (for example with the WGCNA package). 
 cutoffs=c(-Inf,-1.3,-0.1,0.1,0.9,Inf),
 ### Copy number cutoffs.
-cutoff.labels=c("High Loss","Loss","Normal","Gain","Amplification"),
+cutoff.labels=c("Homozyg. Deletion","Heterozyg. Deletion","Normal","Gain","Amplification"),
 ### The labels of these cutoffs.
 probesets=NULL, 
 ### Display only these genes. If null, show all genes. That default is 
@@ -992,7 +992,7 @@ coding.fun = function(x) ifelse(x=="Silent",1,2),
         ddply(sm[sm$Hugo_Symbol==x,], "Tumor_Sample_Barcode", function(y)
         y[which.max(y$.coding),c("Hugo_Symbol","Tumor_Sample_Barcode",".coding")])))
 
-    mdf <- cast(Hugo_Symbol~Tumor_Sample_Barcode,data=d.f,value=".coding")
+    mdf <- dcast(Hugo_Symbol~Tumor_Sample_Barcode,data=d.f,value.var=".coding")
 
     mdf[is.na(mdf)] <- 0
     eset <- copynumbR.eset(mdf, clinical, ...)
@@ -1050,7 +1050,6 @@ probesets
     d.f$alpha= ifelse(d.f$value,1,0)
     d.f[d.f$type=="Normal","alpha"] <- 0
     d.f <- d.f[order(d.f$type),]
-    d.f <- d.f[!duplicated(paste(d.f[,1], d.f[,2], d.f[,"alpha"])),]
     .order <- sapply(levels(d.f[,1]), function(x)
         sum( (length(levels(d.f$type))-as.numeric(d.f[d.f[,1]==x,"type"]))*
              10^(as.numeric(d.f[d.f[,1]==x,"value"]))*
@@ -1059,10 +1058,15 @@ probesets
 
     d.f <- d.f[order(d.f$.order,decreasing=TRUE),]
     d.f$X1 <- factor(d.f$X1, levels=unique(d.f$X1))
+    d.f <- d.f[order(d.f$alpha,decreasing=TRUE),]
+    d.f <- d.f[!duplicated(paste(d.f[,1], d.f[,2])),]
 
     p <- ggplot(d.f, aes(X1,
     X2,alpha=alpha,fill=type))+geom_tile()+ylab("")+theme_grey(16)+theme(axis.text.x=element_blank(),
-    axis.ticks.x=element_blank())+xlab("")+scale_alpha_continuous(guide=FALSE)+scale_fill_discrete(name = "Mutation Type")
+    axis.ticks.x=element_blank())+xlab("")+scale_alpha_continuous(guide=FALSE)+scale_fill_discrete(name
+    = "Mutation Type")+guides(fill = guide_legend(override.aes= list(alpha =
+     ifelse(levels(d.f$type)=="Normal", 0, 1))))
+
 
 ### A ggplot2 object.    
 }

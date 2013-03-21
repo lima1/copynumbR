@@ -17,6 +17,7 @@ Imports:
     plyr(>= 1.8), 
     RColorBrewer, 
     scales,
+    reshape2,
     grid, 
     xts(>= 0.9), 
     ggdendro,

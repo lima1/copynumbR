@@ -4,10 +4,10 @@
 \description{A boxplot showing correlation of copy number and expression for matched
 data.}
 \usage{copynumbR.boxplot(eset.cn, eset.expr, cutoffs = c(-Inf, -1.3, 
-    -0.1, 0.1, 0.9, Inf), cutoff.labels = c("High Loss", "Loss", 
-    "Normal", "Gain", "Amplification"), probesets = NULL, min.samples = 3, 
-    sqrt = FALSE, xlab = "Copy Number", ylab = "Expression", 
-    outlier.shape = NA, plot = TRUE)}
+    -0.1, 0.1, 0.9, Inf), cutoff.labels = c("Homozyg. Deletion", 
+    "Heterozyg. Deletion", "Normal", "Gain", "Amplification"), 
+    probesets = NULL, min.samples = 3, sqrt = FALSE, xlab = "Copy Number", 
+    ylab = "Expression", outlier.shape = NA, plot = TRUE)}
 \arguments{
   \item{eset.cn}{ExpressionSet with copy number data. The featureNames and sampleNames
 must correspond to the eset.expr provided next. Typically created with
