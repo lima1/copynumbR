@@ -580,7 +580,7 @@ plot=TRUE
         apply(exprs(eset.cn),1, function(x) x>cutoffs[i-1]
         & x <=cutoffs[i]))
     names(res) <- cutoff.labels    
-    res <- lapply(res, function(x) x[apply(x, 2, sum)>0,])
+    res <- lapply(res, function(x) x[,apply(x, 2, sum)>0])
     res <- res[lapply(res, function(x) sum(as.vector(x))) > min.samples]
 
     d.f <- do.call(rbind,unlist(lapply(1:length(res), function(i)
@@ -1001,7 +1001,7 @@ coding.fun = function(x) ifelse(x=="Silent",1,2),
 }
 
 copynumbR.mutation.heatmap <- function
-###
+### Plot a heatmap visualizing gene mutations (somatic and copy number)
 (eset.cn, 
 ### ExpressionSet with copy number data, typically gene-level data parsed with
 ### copynumbR.read.segmented( ... , gene=TRUE)
@@ -1044,8 +1044,10 @@ probesets
 
     d.f <- do.call(rbind,lapply(1:length(res),function(i)
         data.frame(melt(res[[i]]), type=names(res)[i])))
+    
+    colnames(d.f)[1:2] <- c("SampleID", "Gene")
 
-    d.f$X2 <- factor(d.f$X2, levels=probesets)    
+    d.f$Gene <- factor(d.f$Gene, levels=probesets)    
 
     d.f$alpha= ifelse(d.f$value,1,0)
     d.f[d.f$type=="Normal","alpha"] <- 0
@@ -1053,22 +1055,39 @@ probesets
     .order <- sapply(levels(d.f[,1]), function(x)
         sum( (length(levels(d.f$type))-as.numeric(d.f[d.f[,1]==x,"type"]))*
              10^(as.numeric(d.f[d.f[,1]==x,"value"]))*
-             100^(length(probesets)-as.numeric(d.f[d.f[,1]==x,"X2"]))  ))
+             100^(length(probesets)-as.numeric(d.f[d.f[,1]==x,"Gene"]))  ))
     d.f$.order <- .order[d.f[,1]]
 
     d.f <- d.f[order(d.f$.order,decreasing=TRUE),]
-    d.f$X1 <- factor(d.f$X1, levels=unique(d.f$X1))
+    d.f$SampleID <- factor(d.f$SampleID, levels=unique(d.f$SampleID))
     d.f <- d.f[order(d.f$alpha,decreasing=TRUE),]
     d.f <- d.f[!duplicated(paste(d.f[,1], d.f[,2])),]
 
-    p <- ggplot(d.f, aes(X1,
-    X2,alpha=alpha,fill=type))+geom_tile()+ylab("")+theme_grey(16)+theme(axis.text.x=element_blank(),
+    p <- ggplot(d.f, aes(SampleID,
+    Gene,alpha=alpha,fill=type))+geom_tile()+ylab("")+theme_grey(16)+theme(axis.text.x=element_blank(),
     axis.ticks.x=element_blank())+xlab("")+scale_alpha_continuous(guide=FALSE)+scale_fill_discrete(name
     = "Mutation Type")+guides(fill = guide_legend(override.aes= list(alpha =
      ifelse(levels(d.f$type)=="Normal", 0, 1))))
 
 
 ### A ggplot2 object.    
+}
+
+copynumbR.mutation.table <- function
+### Extract muations from copynumbR.mutation.heatmap
+(p 
+### The ggplot2 object returned by copynumbR.mutation.heatmap()
+) {
+    X <- p$data
+    # code normal as no mutation, obviously
+    X[X$type=="Normal","value"] <- FALSE
+    X <- dcast(SampleID~Gene+value,data=X)
+    # not present means no mutation
+    X[is.na(X)] <- FALSE
+    X <-X[,c(1, grep("TRUE",colnames(X)))]
+    rownames(X) <- X[,1]
+    X[,-1]
+### A data.frame with mutations in columns and samples in rows
 }
 
 copynumbR.absolute.run <- function
