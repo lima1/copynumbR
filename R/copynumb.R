@@ -520,6 +520,25 @@ phenoData=pd)
     eset$GENDER.2
 })
 
+copynumbR.categorical <- structure(function
+### Convert log2 copy number ratios in copy number categories
+(x,
+### Vector of log2 copy number ratios.
+cutoffs=c(-Inf,-1.3,-0.1,0.1,0.9,Inf),
+### Copy number cutoffs.
+cutoff.labels=c("Homozyg. Deletion","Heterozyg. Deletion",
+"Normal","Gain","Amplification")
+### The labels of these cutoffs.
+### Provide a summary
+) {
+    .hf <- function(xx) { 
+        for (i in 2:length(cutoffs)) 
+            if (xx > cutoffs[i-1] &
+                xx <= cutoffs[i]) return(cutoff.labels[i-1])
+    }
+    sapply(x,.hf)
+})
+
 copynumbR.boxplot <- structure(function
 ### A boxplot showing correlation of copy number and expression for matched
 ### data.
@@ -1215,4 +1234,18 @@ signature(from="ExpressionSet", ##<< From ExpressionSet
     CNA(exprs(from), featureData(from)$chr,
     featureData(from)$start, sampleid=sampleNames(from))
 })
+
+copynumbR.cor.genes.test <- function(probeset, eset.expr, method="BH", 
+cutoff=0.001, n=20, annotation=NULL) {
+    res <- apply(exprs(eset.expr),1, function(x)
+        cor.test(exprs(eset.expr)[probeset,],x))
+    pval <- p.adjust(sapply(res, function(x) x$p.value), method=method)
+    rho <- sapply(res, function(x) x$estimate)
+    n <- min(n, sum(rho > 0 & pval < cutoff))
+    probesets <- featureNames(eset.expr)[order(rho, decreasing=TRUE)]
+    if (!is.null(annotation)) { 
+        probesets <- na.omit(getSYMBOL(probesets, annotation))
+    }    
+    return(head(probesets,n))
+}
 
