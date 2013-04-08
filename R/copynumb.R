@@ -1235,17 +1235,52 @@ signature(from="ExpressionSet", ##<< From ExpressionSet
     featureData(from)$start, sampleid=sampleNames(from))
 })
 
-copynumbR.cor.genes.test <- function(probeset, eset.expr, method="BH", 
-cutoff=0.001, n=20, annotation=NULL) {
-    res <- apply(exprs(eset.expr),1, function(x)
+copynumbR.cor.genes.test <- structure(function
+### Find correlated probesets.
+(probeset, 
+### Probeset to test
+eset.expr,
+### ExpressionSet containing the expression data of probeset. 
+eset.expr2=eset.expr, 
+### ExpressionSet which we test for correlated expression, i.e, eset.expr[probeset,] will be tested for correlated
+### expression with eset.expr2. Default is test for correlation in the same
+### data as probeset. 
+method="BH", 
+### p.adjust method for adjusting for multiple testing.
+cutoff=0.05, 
+### P-value cutoff.
+n=20, 
+### Maximum number of reported correlated probesets.
+direction="positive",
+### Direction. Either "positive" or "negative".
+annotation=NULL
+### Translate probeset ids to symbols with the getSYMBOL(probeset, annotation) function if not NULL.
+) {
+    res <- apply(exprs(eset.expr2),1, function(x)
         cor.test(exprs(eset.expr)[probeset,],x))
     pval <- p.adjust(sapply(res, function(x) x$p.value), method=method)
     rho <- sapply(res, function(x) x$estimate)
-    n <- min(n, sum(rho > 0 & pval < cutoff))
-    probesets <- featureNames(eset.expr)[order(rho, decreasing=TRUE)]
+    if (direction=="positive") {
+        n <- min(n, sum(rho > 0 & pval < cutoff))
+        probesets <- featureNames(eset.expr2)[order(rho, decreasing=TRUE)]
+    } else {
+        n <- min(n, sum(rho < 0 & pval < cutoff))
+        probesets <- featureNames(eset.expr2)[order(rho, decreasing=FALSE)]
+    }
+
     if (!is.null(annotation)) { 
         probesets <- na.omit(getSYMBOL(probesets, annotation))
     }    
     return(head(probesets,n))
-}
+},ex=function(){
+    library(copynumbR)
+    data(PMID17099711.GPL91_eset)
+
+    res <- copynumbR.cor.genes.test("MYC", PMID17099711.GPL91_eset,
+    method="none")
+
+    cor.test(exprs(PMID17099711.GPL91_eset)["MYC",],
+        exprs(PMID17099711.GPL91_eset)["ELL2P1///ELL2",])
+
+})
 

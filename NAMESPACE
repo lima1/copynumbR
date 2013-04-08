@@ -1,4 +1,5 @@
 export(copynumbR.boxplot)
+export(copynumbR.cor.genes.test)
 export(copynumbR.gistic.clone.eset)
 export(copynumbR.gistic.armplot)
 export(copynumbR.gistic.focal)
