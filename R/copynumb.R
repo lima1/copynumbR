@@ -253,7 +253,7 @@ copynumbR.tcga.write.segmented <- function
 ### Create a segmented copy number file from TCGA Level 3 data
 (path=".", 
 ### The path containing the Level_3 folder.
-output="tcga.seg",
+file="tcga.seg",
 ### The segemented data output file.
 hg="hg18", 
 ### The genome version.
@@ -261,14 +261,41 @@ verbose=TRUE
 ### Print some additional progress information.
 ) {
     files <- dir(paste(path,"Level_3/", sep="/"), full.names=TRUE)
-    files <- files[grep(paste("\\.",hg,sep=""), files)]
+
+    if (!is.null(hg)) {
+        files <- files[grep(paste("\\.",hg,sep=""), files)]
+    }
+
     if (verbose) cat("Reading", files,sep="\n") 
     data <- lapply(files, read.delim, stringsAsFactors=FALSE)
     
-    for (i in 1:length(data)) {
-        write.table(data[[i]], file=output, append=i!=1, col.names=i==1,
-        row.names=FALSE, quote=FALSE, sep="\t") 
+    if (!is.null(file)) {
+        for (i in 1:length(data)) {
+            write.table(data[[i]], file=file, append=i!=1, col.names=i==1,
+            row.names=FALSE, quote=FALSE, sep="\t") 
+        }
     }
+    do.call(rbind, data)
+### A data.frame containing the segmented data.   
+}
+
+copynumbR.tcga.read.methylation <- function
+### Create a copynumbR.eset input file from Level 3 methylation data
+(path=".", 
+### The path containing the Level_3 folder.
+file="tcga_methylation.txt",
+### The output file
+sep="\t",
+### The field separator character. See write.table().
+...
+### Additional arguments passed to write.table()
+) {
+    x <- copynumbR.tcga.write.segmented(path=path,file=NULL, hg=NULL)
+    data <-
+    dcast(gene.symbol+chromosome+position~barcode,value.var="beta.value",data=x,
+    fun.aggregate=mean)
+    write.table(data, file=file, sep=sep, ...)
+### An ExpressionSet    
 }
 
 copynumbR.read.segmented <- structure(function
