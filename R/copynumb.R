@@ -292,9 +292,12 @@ sep="\t",
 ) {
     x <- copynumbR.tcga.write.segmented(path=path,file=NULL, hg=NULL)
     data <-
-    dcast(gene.symbol+chromosome+position~barcode,value.var="beta.value",data=x,
+    dcast(gene.symbol~barcode,value.var="beta.value",data=x,
     fun.aggregate=mean)
-    write.table(data, file=file, sep=sep, ...)
+    data <- data[!is.na(data[,1]),]
+    data <- data[data[,1] != "",]
+
+    write.table(data, file=file, sep=sep, row.names=FALSE,...)
 ### An ExpressionSet    
 }
 
@@ -1027,20 +1030,17 @@ coding.fun = function(x) ifelse(x=="Silent",1,2),
 ### This function return an ExpressionSet with the mutation types coded
 ### numerically. This function can be used to code mutations. 0 means no
 ### mutation.
+verbose=TRUE,
 ...
 ### Additional parameters passed to copynumbR.eset
 )
 {
+    if (verbose) print("Reading MAF file...")
     sm <- read.delim(filename)
     sm$.coding <- coding.fun(sm$Variant_Classification)
-
-    d.f <- do.call(rbind, lapply(levels(sm$Hugo_Symbol), function(x)
-        ddply(sm[sm$Hugo_Symbol==x,], "Tumor_Sample_Barcode", function(y)
-        y[which.max(y$.coding),c("Hugo_Symbol","Tumor_Sample_Barcode",".coding")])))
-
-    mdf <- dcast(Hugo_Symbol~Tumor_Sample_Barcode,data=d.f,value.var=".coding")
-
-    mdf[is.na(mdf)] <- 0
+    if (verbose) print("Generating mutation matrix...")
+    mdf <- dcast(Hugo_Symbol ~ Tumor_Sample_Barcode, data = sm, value.var = ".coding", fun.aggregate=max)
+    mdf[mdf < 0] <- 0
     eset <- copynumbR.eset(mdf, clinical, ...)
     featureNames(eset) <- mdf[,1]
     eset
