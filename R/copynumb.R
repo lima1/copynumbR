@@ -629,7 +629,7 @@ plot=TRUE
         apply(exprs(eset.cn),1, function(x) x>cutoffs[i-1]
         & x <=cutoffs[i]))
     names(res) <- cutoff.labels    
-    res <- lapply(res, function(x) x[,apply(x, 2, sum)>0])
+    res <- lapply(res, function(x) x[,apply(x, 2, sum)>0, drop=FALSE])
     res <- res[lapply(res, function(x) sum(as.vector(x))) > min.samples]
 
     d.f <- do.call(rbind,unlist(lapply(1:length(res), function(i)
@@ -1022,10 +1022,10 @@ centromere.file="hg18"
 copynumbR.read.maf <- function
 ### Parse a MAF file.
 (filename,
-### The filename of the MAF file
-clinical,
+### The filename of the MAF file. Can be a vector of filenames.
+clinical=NULL,
 ### A data frame with clinical annotation for the phenoData slot of the output
-### ExpressionSet.
+### ExpressionSet. If NULL, return a data.frame with mutations
 coding.fun = function(x) ifelse(x=="Silent",1,2),
 ### This function return an ExpressionSet with the mutation types coded
 ### numerically. This function can be used to code mutations. 0 means no
@@ -1036,14 +1036,24 @@ verbose=TRUE,
 )
 {
     if (verbose) print("Reading MAF file...")
-    sm <- read.delim(filename)
+    if (length(filename) > 1) {
+        sm <- lapply(filename, read.delim)
+        cols <- Reduce(intersect, lapply(sm, colnames))
+        sm <- do.call(rbind, lapply(sm, function(x) x[,cols]))
+    } else {
+        sm <- read.delim(filename)
+    }
     sm$.coding <- coding.fun(sm$Variant_Classification)
     if (verbose) print("Generating mutation matrix...")
     mdf <- dcast(Hugo_Symbol ~ Tumor_Sample_Barcode, data = sm, value.var = ".coding", fun.aggregate=max)
     mdf[mdf < 0] <- 0
-    eset <- copynumbR.eset(mdf, clinical, ...)
-    featureNames(eset) <- mdf[,1]
-    eset
+    if (!is.null(clinical)) {
+        eset <- copynumbR.eset(mdf, clinical, ...)
+        featureNames(eset) <- mdf[,1]
+        return(eset)
+    } 
+    rownames(mdf) <- mdf[,1]
+    return(mdf[,-1])
 }
 
 copynumbR.mutation.heatmap <- function
