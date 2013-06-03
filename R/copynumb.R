@@ -257,17 +257,35 @@ file="tcga.seg",
 ### The segemented data output file.
 hg="hg18", 
 ### The genome version.
-verbose=TRUE
+level=3,
+### The TCGA access level.
+sdrf.file=NULL,
+### Translate filename to TCGA barcode with specified sdrf file.
+sdrf.barcode.col=1,
+### Column with the barcode.
+sdrf.filename.col="Derived.Array.Data.Matrix.File",
+### Column with the data matrix.
+verbose=TRUE,
 ### Print some additional progress information.
+...
+### Additional arguments passed to read.delim() for reading the files.
 ) {
-    files <- dir(paste(path,"Level_3/", sep="/"), full.names=TRUE)
+    files <- dir(paste(path,"/Level_",level,"/", sep=""), full.names=TRUE)
 
     if (!is.null(hg)) {
         files <- files[grep(paste("\\.",hg,sep=""), files)]
     }
 
     if (verbose) cat("Reading", files,sep="\n") 
-    data <- lapply(files, read.delim, stringsAsFactors=FALSE)
+    data <- lapply(files, read.delim, stringsAsFactors=FALSE,...)
+
+    if (!is.null(sdrf.file)) {
+        sdrf <- read.delim(sdrf.file, as.is=TRUE)
+        barcode <- sdrf[match(sapply(files, basename), sdrf[,sdrf.filename.col]),
+            sdrf.barcode.col]
+        data <- lapply(1:length(data), function(i) cbind(barcode=barcode[i],
+            data[[i]]))
+    }
     
     if (!is.null(file)) {
         for (i in 1:length(data)) {
@@ -288,7 +306,7 @@ file="tcga_methylation.txt",
 sep="\t",
 ### The field separator character. See write.table().
 ...
-### Additional arguments passed to write.table()
+### Additional arguments passed to write.table().
 ) {
     x <- copynumbR.tcga.write.segmented(path=path,file=NULL, hg=NULL)
     data <-
@@ -298,7 +316,45 @@ sep="\t",
     data <- data[data[,1] != "",]
 
     write.table(data, file=file, sep=sep, row.names=FALSE,...)
-### An ExpressionSet    
+}
+
+copynumbR.tcga.read.acgh <- function
+### Create a copynumbR.eset input file from Level 2 aCGH data
+(path=".", 
+### The path containing the Level_2 folder.
+file="tcga_acgh.txt",
+### The output file
+sep="\t",
+### The field separator character. See write.table().
+adf.file=NULL,
+### Optionally, the ADF file containing probe information.
+adf.col="Reporter_ID",
+### The column with the probe ids.
+tumor.tcga.only=TRUE,
+### Filter normal and control TCGA samples.
+sdrf.file,
+### Translate filename to TCGA barcode with specified sdrf file.
+...
+### Additional arguments passed to copynumbR.tcga.write.segmented().
+) {
+    x <- copynumbR.tcga.write.segmented(path=path,file=NULL, hg=NULL,level=2,
+    skip=1, sdrf.file=sdrf.file, ...)
+
+    if (tumor.tcga.only) {
+        x <- x[grepl("TCGA-\\d\\d-\\d\\d\\d\\d-0", x[,1]),]
+    }
+
+    data <-
+    dcast(Composite.Element.REF~barcode,value.var="normalizedLog2Ratio",data=x,
+    fun.aggregate=mean)
+
+    if (!is.null(adf.file)) {
+        adf <- read.delim(adf.file, as.is=TRUE)
+        idx <- match(data[,1], adf[, adf.col])
+        data <- cbind(data[,1,drop=FALSE], adf[idx,], data[,2:ncol(data)])
+    }
+
+    write.table(data, file=file, sep=sep, row.names=FALSE)
 }
 
 copynumbR.read.segmented <- structure(function
