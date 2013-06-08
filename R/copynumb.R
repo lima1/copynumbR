@@ -248,6 +248,40 @@ ncol=NULL,
     plot(p)
 })
 
+copynumbR.tcga.generate.frma.eset <- function
+### Create a tab separated file for the phenoData slot. Used for Level 1
+### Affymetrix data.
+(clinical.biotab.file, 
+### The filename with the TCGA clinical data in Biotab format.
+clinical.id.col=1,
+### Column with the TCGA patient ID.
+sdrf.file, 
+### The Level 1 CEL sdrf file.
+sdrf.barcode.col=2,
+### Column with the barcode.
+celfile.path
+### The path to the CEL files.
+) {
+    clinical <- read.delim(clinical.biotab.file,as.is=TRUE)
+    sdrf <- read.delim(sdrf.file, as.is=TRUE)
+    pd <- cbind(ID=paste(sdrf[,sdrf.barcode.col],".CEL", sep=""),
+        clinical[match(substr(sdrf[,sdrf.barcode.col],1,12),
+        clinical[,clinical.id.col]),])
+    rownames(pd) <- pd[,1]
+    pd <- pd[,-1]
+    pd <- new("AnnotatedDataFrame", pd)
+
+    isc <- intersect(sapply(celfiles, basename), sampleNames(pd))
+
+    celfiles <- list.celfiles(celfile.path,full.names=TRUE)
+    celfiles <- celfiles[isc %in% sapply(celfiles, basename)]
+    
+    pd <- pd[isc,]
+
+    affyb <- ReadAffy(filenames=celfiles, phenoData=pd)
+
+    eset.frma <- frma(affyb)
+}
 
 copynumbR.tcga.write.segmented <- function
 ### Create a segmented copy number file from TCGA Level 3 data
@@ -311,7 +345,7 @@ sep="\t",
     x <- copynumbR.tcga.write.segmented(path=path,file=NULL, hg=NULL)
     data <-
     dcast(gene.symbol~barcode,value.var="beta.value",data=x,
-    fun.aggregate=mean)
+    fun.aggregate=mean, na.rm=TRUE)
     data <- data[!is.na(data[,1]),]
     data <- data[data[,1] != "",]
 
