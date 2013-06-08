@@ -289,8 +289,8 @@ copynumbR.tcga.write.segmented <- function
 ### The path containing the Level_3 folder.
 file="tcga.seg",
 ### The segemented data output file.
-hg="hg18", 
-### The genome version.
+filter="\\.hg18", 
+### Consider only files passing the specified grep filter. Default the genome version.
 level=3,
 ### The TCGA access level.
 sdrf.file=NULL,
@@ -306,8 +306,8 @@ verbose=TRUE,
 ) {
     files <- dir(paste(path,"/Level_",level,"/", sep=""), full.names=TRUE)
 
-    if (!is.null(hg)) {
-        files <- files[grep(paste("\\.",hg,sep=""), files)]
+    if (!is.null(filter)) {
+        files <- files[grep(filter, files)]
     }
 
     if (verbose) cat("Reading", files,sep="\n") 
@@ -342,12 +342,33 @@ sep="\t",
 ...
 ### Additional arguments passed to write.table().
 ) {
-    x <- copynumbR.tcga.write.segmented(path=path,file=NULL, hg=NULL)
+    x <- copynumbR.tcga.write.segmented(path=path,file=NULL, filter=NULL)
     data <-
     dcast(gene.symbol~barcode,value.var="beta.value",data=x,
     fun.aggregate=mean, na.rm=TRUE)
     data <- data[!is.na(data[,1]),]
     data <- data[data[,1] != "",]
+
+    write.table(data, file=file, sep=sep, row.names=FALSE,...)
+}
+
+copynumbR.tcga.read.rnaseq <- function
+### Create a copynumbR.eset input file from Level 3 methylation data
+(path=".", 
+### The path containing the Level_3 folder.
+file="tcga_rnaseq.txt",
+### The output file
+sep="\t",
+### The field separator character. See write.table().
+filter="rsem_gene_normalized",
+### Only consider the normalized gene level data by default.
+...
+### Additional arguments passed to write.table().
+) {
+    x <- copynumbR.tcga.write.segmented(path=path,file=NULL, filter=filter)
+    data <-
+    dcast(gene_id~barcode,value.var="normalized_count",data=x,
+    fun.aggregate=mean, na.rm=TRUE)
 
     write.table(data, file=file, sep=sep, row.names=FALSE,...)
 }
@@ -371,7 +392,7 @@ sdrf.file,
 ...
 ### Additional arguments passed to copynumbR.tcga.write.segmented().
 ) {
-    x <- copynumbR.tcga.write.segmented(path=path,file=NULL, hg=NULL,level=2,
+    x <- copynumbR.tcga.write.segmented(path=path,file=NULL, filter=NULL,level=2,
     skip=1, sdrf.file=sdrf.file, ...)
 
     if (tumor.tcga.only) {
