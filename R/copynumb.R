@@ -537,8 +537,8 @@ probesets=NULL,
 ### obviously only useful for already filtered ExpressionSets.
 min.samples=3, 
 ### Minimum number of samples in each cutoff category.
-sqrt=FALSE,
-### Square root transform the data for read counts?
+scale=FALSE,
+### scale the data for read counts? sqrt or log10 available
 xlab="Copy Number",
 ### The label of the x-axis.
 ylab="Expression",
@@ -594,10 +594,15 @@ plot=TRUE
     if (plot) {
         p <- ggplot(d.f,
         aes(Group,Expr))+geom_boxplot(outlier.shape = outlier.shape )
-        if (sqrt)
+        if (scale=="sqrt") {
             p <- p + scale_y_sqrt(breaks=trans_breaks("sqrt",function(x) x ^
                 2)(c(1,1:8*(max(d.f$Expr)/7))))
+        } else if (scale=="log10") {
+            p <- p + scale_y_log10(breaks=trans_breaks("log10",function(x) x ^
+                2)(c(1,1:8*(max(d.f$Expr)/7))))
+        }
         p <- p +facet_wrap(~Gene)+theme(axis.text.x=element_text(angle=45,
+
         hjust=1))+ylab(ylab)+xlab(xlab)
     } else { 
         p=NULL 
@@ -966,42 +971,6 @@ centromere.file="hg18"
     p <- copynumbR.heatmap(eset, centromere.file="hg17")
 })
 
-copynumbR.read.maf <- function
-### Parse a MAF file.
-(filename,
-### The filename of the MAF file. Can be a vector of filenames.
-clinical=NULL,
-### A data frame with clinical annotation for the phenoData slot of the output
-### ExpressionSet. If NULL, return a data.frame with mutations
-coding.fun = function(x) ifelse(x=="Silent",1,2),
-### This function return an ExpressionSet with the mutation types coded
-### numerically. This function can be used to code mutations. 0 means no
-### mutation.
-verbose=TRUE,
-...
-### Additional parameters passed to copynumbR.eset
-)
-{
-    if (verbose) print("Reading MAF file...")
-    if (length(filename) > 1) {
-        sm <- lapply(filename, read.delim)
-        cols <- Reduce(intersect, lapply(sm, colnames))
-        sm <- do.call(rbind, lapply(sm, function(x) x[,cols]))
-    } else {
-        sm <- read.delim(filename)
-    }
-    sm$.coding <- coding.fun(sm$Variant_Classification)
-    if (verbose) print("Generating mutation matrix...")
-    mdf <- dcast(Hugo_Symbol ~ Tumor_Sample_Barcode, data = sm, value.var = ".coding", fun.aggregate=max)
-    mdf[mdf < 0] <- 0
-    if (!is.null(clinical)) {
-        eset <- copynumbR.eset(mdf, clinical, ...)
-        featureNames(eset) <- mdf[,1]
-        return(eset)
-    } 
-    rownames(mdf) <- mdf[,1]
-    return(mdf[,-1])
-}
 
 copynumbR.mutation.heatmap <- function
 ### Plot a heatmap visualizing gene mutations (somatic and copy number)
@@ -1042,7 +1011,7 @@ probesets
     names(res2) <- mutation.labels
     res <- c(res2, res)
 
-    res <- lapply(res, function(x) x[apply(x, 1, sum)>0,])
+    res <- lapply(res, function(x) x[apply(x, 1, sum)>0,,drop=FALSE])
     res <- res[lapply(res, length)>3]
 
     d.f <- do.call(rbind,lapply(1:length(res),function(i)
@@ -1050,6 +1019,7 @@ probesets
     
     colnames(d.f)[1:2] <- c("SampleID", "Gene")
 
+    d.f$SampleID <- as.factor(d.f$SampleID)
     d.f$Gene <- factor(d.f$Gene, levels=probesets)    
 
     d.f$alpha= ifelse(d.f$value,1,0)
