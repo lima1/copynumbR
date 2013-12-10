@@ -985,8 +985,10 @@ cutoff.labels=c("Homozyg. Deletion","Heterozyg. Deletion","Normal","Gain","Ampli
 ### The labels of these cutoffs.
 mutation.labels=c("Silent","Non-Silent"),
 ### The labels of the mutations 
-probesets
+probesets,
 ### Plot these probesets (genes) only
+hide.wildtype=FALSE
+## If TRUE, show only altered cases
 ) {
     if (!is.null(probesets)) {
         probesets.avail <- probesets[probesets %in%
@@ -1035,6 +1037,12 @@ probesets
     d.f$SampleID <- factor(d.f$SampleID, levels=unique(d.f$SampleID))
     d.f <- d.f[order(d.f$alpha,decreasing=TRUE),]
     d.f <- d.f[!duplicated(paste(d.f[,1], d.f[,2])),]
+
+    if (hide.wildtype) {
+        mutated <- unique(d.f[d.f$alpha == 1, "SampleID"])
+        d.f <- d.f[d.f$SampleID %in% mutated,]
+        d.f$type <- factor(d.f$type)
+    }
 
     p <- ggplot(d.f, aes(SampleID,
     Gene,alpha=alpha,fill=type))+geom_tile()+ylab("")+theme_grey(16)+theme(axis.text.x=element_blank(),
